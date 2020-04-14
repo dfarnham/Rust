@@ -69,12 +69,13 @@ const R_B64TABLE: [u8; 80] = [
  *   ++++++ u.a == 010000 == b64table[16] == 'Q'
  *
  */
-fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: u8) {
-    dst[0] = B64TABLE[(src[0] >> 2) as usize];
 
+fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: u8) {
     // assert!(0x30 == 0b0011_0000);
     // assert!(0x3c == 0b0011_1100);
     // assert!(0x3f == 0b0011_1111);
+
+    dst[0] = B64TABLE[(src[0] >> 2) as usize];
     if n == 1 {
         dst[1] = B64TABLE[((src[0] << 4) & 0b0011_0000) as usize];
         dst[2] = 61;
@@ -91,10 +92,10 @@ fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: u8) {
 }
 
 fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
-    let mut n = 3;
-
     // assert!(0x03 == 0b0000_0011);
     // assert!(0x0f == 0b0000_1111);
+
+    let mut n = 3;
     let a = R_B64TABLE[(src[0] - 43) as usize];
     let b = R_B64TABLE[(src[1] - 43) as usize];
     dst[0] = (a << 2) | ((b >> 4) & 0b0000_0011);
@@ -152,8 +153,8 @@ fn main() -> io::Result<()> {
             .expect("read_to_end() failure");
     }
 
-    let mut src = [0; 3];
-    let mut dst = [0; 4];
+    let mut src = [0; 3];  // original bytes
+    let mut dst = [0; 4];  // Base64 bytes
     let mut n = 0 as usize;
     if decode {
         for byte in buffer.bytes() {

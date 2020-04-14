@@ -41,6 +41,8 @@ fn test_padded_encode1() {
     let mut dst: [u8; 4] = [0; 4];
 
     src[0] = 'A' as u8;
+    src[1] = '*' as u8; // invalid Base64 char
+    src[2] = '*' as u8; // invalid Base64 char
 
     b64_encode(src, &mut dst, 1);
 
@@ -73,6 +75,7 @@ fn test_padded_encode2() {
 
     src[0] = 'A' as u8;
     src[1] = 'B' as u8;
+    src[2] = '*' as u8; // invalid Base64 char
 
     b64_encode(src, &mut dst, 2);
 
