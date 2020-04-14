@@ -5,27 +5,27 @@ use std::io::{self, Read, Write};
 
 // Base64 alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 const B64TABLE: [u8; 64] = [
-     65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77, // "ABCDEFGHIJKLM"
-     78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90, // "NOPQRSTUVWXYZ"
-     97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, // "abcdefghijklm"
-    110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, // "nopqrstuvwxyz"
-     48,  49,  50,  51,  52,  53,  54,  55,  56,  57,                // "0123456789"
-     43,                                                             // "+"
-     47                                                              // "/"
+     65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  // "ABCDEFGHIJKLM"
+     78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  // "NOPQRSTUVWXYZ"
+     97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109,  // "abcdefghijklm"
+    110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122,  // "nopqrstuvwxyz"
+     48,  49,  50,  51,  52,  53,  54,  55,  56,  57,                 // "0123456789"
+     43,                                                              // "+"
+     47                                                               // "/"
 ];
 
 // Reverse index that yields the 6 bit value (position in the alphabet)
 const R_B64TABLE: [u8; 80] = [
-    62,                                                 // "+"
-     0,  0,  0,                                         // unused
-    63,                                                 // "/"
-    52, 53, 54, 55, 56, 57, 58, 59, 60, 61,             // "0" .. "9"
-     0,  0,  0,  0,  0,  0,  0,                         // unused
-     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, // "A" - "M"
-    13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, // "N" - "Z"
-     0,  0,  0,  0,  0,  0,                             // unused
-    26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, // "a" - "m"
-    39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, // "n" - "z"
+    62,                                                  // "+"
+     0,  0,  0,                                          // unused
+    63,                                                  // "/"
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61,              // "0" .. "9"
+     0,  0,  0,  0,  0,  0,  0,                          // unused
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12,  // "A" - "M"
+    13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,  // "N" - "Z"
+     0,  0,  0,  0,  0,  0,                              // unused
+    26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,  // "a" - "m"
+    39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51   // "n" - "z"
 ];
 
 /* Algorithm using shifting:
@@ -79,15 +79,15 @@ fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: u8) {
     if n == 1 {
         dst[1] = B64TABLE[((src[0] << 4) & 0b0011_0000) as usize];
         dst[2] = 61;
-        dst[3] = 61;
+        dst[3] = 61
     } else if n == 2 {
         dst[1] = B64TABLE[(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4)) as usize];
         dst[2] = B64TABLE[((src[1] << 2) &  0b0011_1100) as usize];
-        dst[3] = 61;
+        dst[3] = 61
     } else {
         dst[1] = B64TABLE[(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4)) as usize];
         dst[2] = B64TABLE[(((src[1] << 2) & 0b0011_1100) | (src[2] >> 6)) as usize];
-        dst[3] = B64TABLE[(src[2] & 0b0011_1111) as usize];
+        dst[3] = B64TABLE[(src[2] & 0b0011_1111) as usize]
     }
 }
 
@@ -102,7 +102,7 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
 
     if src[3] == 61 {
         if src[2] == 61 {
-            n = 1;
+            n = 1
         } else {
             let c = R_B64TABLE[(src[2] - 43) as usize];
             dst[1] = (b << 4) | ((c >> 2) & 0b0000_1111);
@@ -112,10 +112,10 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
         let c = R_B64TABLE[(src[2] - 43) as usize];
         let d = R_B64TABLE[(src[3] - 43) as usize];
         dst[1] = (b << 4) | ((c >> 2) & 0b0000_1111);
-        dst[2] = (c << 6) | d;
+        dst[2] = (c << 6) | d
     }
 
-    return n;
+    return n
 }
 
 fn main() -> io::Result<()> {
@@ -129,7 +129,7 @@ fn main() -> io::Result<()> {
 
     let arg_match = match opts.parse(&args[1..]) {
         Ok(o)  => o,
-        Err(e) => panic!(e.to_string()),
+        Err(e) => panic!(e.to_string())
     };
 
     let encode = arg_match.opt_present("e");
@@ -140,7 +140,7 @@ fn main() -> io::Result<()> {
     // not specifying a mode implies -encode
     if encode && decode || arg_match.opt_present("h") {
         print_usage(&args[0], opts);
-        std::process::exit(0);
+        std::process::exit(0)
     }
 
     // setup a buffer to receive data from stdin|file, note a filename of "-" implies stdin
@@ -162,7 +162,7 @@ fn main() -> io::Result<()> {
 
             // formatted Base64 allows for embedded newlines that should be ignored
             if ch == 10 || ch == 13 {
-                continue;
+                continue
             }
 
             dst[n] = ch;
@@ -170,10 +170,10 @@ fn main() -> io::Result<()> {
             if n == 4 {
                 let nbytes = b64_decode(dst, &mut src) as usize;
                 io::stdout().write_all(&src[0..nbytes])?;
-                n = 0;
+                n = 0
             }
         }
-        assert!(n == 0, "final {} bytes were not decoded", n);
+        assert!(n == 0, "final {} bytes were not decoded", n)
     } else {
         let mut pretty_counter = 0;
         for byte in buffer.bytes() {
@@ -188,15 +188,15 @@ fn main() -> io::Result<()> {
                     pretty_counter += 1;
                     if pretty_counter == 19 {
                         io::stdout().write(b"\n")?;
-                        pretty_counter = 0;
+                        pretty_counter = 0
                     }
                 }
-                n = 0;
+                n = 0
             }
         }
         if n != 0 {
             b64_encode(src, &mut dst, n as u8);
-            io::stdout().write_all(&dst)?;
+            io::stdout().write_all(&dst)?
         }
         io::stdout().write(b"\n")?;
     }
@@ -206,7 +206,7 @@ fn main() -> io::Result<()> {
 
 fn print_usage(program: &str, opts: Options) {
     let brief = format!("# Rust\nUsage: {} [-encode] [-decode] [-pretty] file|stdin", program);
-    print!("{}", opts.usage(&brief));
+    print!("{}", opts.usage(&brief))
 }
 
 #[cfg(test)]

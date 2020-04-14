@@ -14,7 +14,7 @@ fn test_basic() {
     assert!(dst[0] as char == 'Q');
     assert!(dst[1] as char == 'U');
     assert!(dst[2] as char == 'J');
-    assert!(dst[3] as char == 'D');
+    assert!(dst[3] as char == 'D')
 }
 
 #[test]
@@ -32,7 +32,7 @@ fn test_basic_decode() {
     assert!(nbytes == 3);
     assert!(src[0] as char == 'A');
     assert!(src[1] as char == 'B');
-    assert!(src[2] as char == 'C');
+    assert!(src[2] as char == 'C')
 }
 
 #[test]
@@ -49,7 +49,7 @@ fn test_padded_encode1() {
     assert!(dst[0] as char == 'Q');
     assert!(dst[1] as char == 'Q');
     assert!(dst[2] as char == '=');
-    assert!(dst[3] as char == '=');
+    assert!(dst[3] as char == '=')
 }
 
 #[test]
@@ -65,7 +65,7 @@ fn test_padded_decode1() {
     let nbytes = b64_decode(dst, &mut src);
 
     assert!(nbytes == 1);
-    assert!(src[0] as char == 'A');
+    assert!(src[0] as char == 'A')
 }
 
 #[test]
@@ -82,7 +82,7 @@ fn test_padded_encode2() {
     assert!(dst[0] as char == 'Q');
     assert!(dst[1] as char == 'U');
     assert!(dst[2] as char == 'I');
-    assert!(dst[3] as char == '=');
+    assert!(dst[3] as char == '=')
 }
 
 #[test]
@@ -99,5 +99,5 @@ fn test_padded_decode2() {
 
     assert!(nbytes == 2);
     assert!(src[0] as char == 'A');
-    assert!(src[1] as char == 'B');
+    assert!(src[1] as char == 'B')
 }
