@@ -143,9 +143,11 @@ fn main() -> io::Result<()> {
     // read data from stdin or file, note a filename of "-" implies stdin
     let mut byte_buffer = Vec::new();
     if arg_match.free.is_empty() || arg_match.free[0] == "-" {
-        io::stdin().read_to_end(&mut byte_buffer)?;
+        io::stdin().read_to_end(&mut byte_buffer)
+            .expect("read_to_end() failure");
     } else {
-        File::open(arg_match.free[0].clone())?.read_to_end(&mut byte_buffer)?;
+        File::open(arg_match.free[0].clone())?.read_to_end(&mut byte_buffer)
+            .expect("read_to_end() failure");
     }
 
     let mut src = [0; 3];
