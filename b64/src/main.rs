@@ -28,6 +28,13 @@ const R_B64TABLE: [u8; 80] = [
     39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51   // "n" - "z"
 ];
 
+// values in R_B64TABLE are offset by the minimum value ("+") in B64TABLE
+const TABLE_OFFSET: u8 = 43;
+
+// Base64 pad character ("=")
+const PAD_CHAR: u8 = 61;
+
+
 /* Algorithm using shifting:
  *
  * bytes[0] = 'A'
@@ -75,19 +82,25 @@ fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: u8) {
     // assert!(0x3c == 0b0011_1100);
     // assert!(0x3f == 0b0011_1111);
 
-    dst[0] = B64TABLE[(src[0] >> 2) as usize];
-    if n == 1 {
-        dst[1] = B64TABLE[((src[0] << 4) & 0b0011_0000) as usize];
-        dst[2] = 61;
-        dst[3] = 61
-    } else if n == 2 {
-        dst[1] = B64TABLE[(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4)) as usize];
-        dst[2] = B64TABLE[((src[1] << 2) &  0b0011_1100) as usize];
-        dst[3] = 61
-    } else {
-        dst[1] = B64TABLE[(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4)) as usize];
-        dst[2] = B64TABLE[(((src[1] << 2) & 0b0011_1100) | (src[2] >> 6)) as usize];
-        dst[3] = B64TABLE[(src[2] & 0b0011_1111) as usize]
+    dst[0] = B64TABLE[usize::from(src[0] >> 2)];
+    match n {
+        1 => {
+            dst[1] = B64TABLE[usize::from((src[0] << 4) & 0b0011_0000)];
+            dst[2] = PAD_CHAR;
+            dst[3] = PAD_CHAR;
+        },
+
+        2 => {
+            dst[1] = B64TABLE[usize::from(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4))];
+            dst[2] = B64TABLE[usize::from((src[1] << 2) & 0b0011_1100)];
+            dst[3] = PAD_CHAR;
+        },
+
+        _ => {
+            dst[1] = B64TABLE[usize::from(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4))];
+            dst[2] = B64TABLE[usize::from(((src[1] << 2) & 0b0011_1100) | (src[2] >> 6))];
+            dst[3] = B64TABLE[usize::from(src[2] & 0b0011_1111)];
+        }
     }
 }
 
@@ -95,24 +108,26 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
     // assert!(0x03 == 0b0000_0011);
     // assert!(0x0f == 0b0000_1111);
 
-    let mut n = 3;
-    let a = R_B64TABLE[(src[0] - 43) as usize];
-    let b = R_B64TABLE[(src[1] - 43) as usize];
+    let n;  // return value: 1, 2, 3
+
+    let a = R_B64TABLE[usize::from(src[0] - TABLE_OFFSET)];
+    let b = R_B64TABLE[usize::from(src[1] - TABLE_OFFSET)];
     dst[0] = (a << 2) | ((b >> 4) & 0b0000_0011);
 
-    if src[3] == 61 {
-        if src[2] == 61 {
+    if src[3] == PAD_CHAR {
+        if src[2] == PAD_CHAR {
             n = 1
         } else {
-            let c = R_B64TABLE[(src[2] - 43) as usize];
+            let c = R_B64TABLE[usize::from(src[2] - TABLE_OFFSET)];
             dst[1] = (b << 4) | ((c >> 2) & 0b0000_1111);
             n = 2
         }
     } else {
-        let c = R_B64TABLE[(src[2] - 43) as usize];
-        let d = R_B64TABLE[(src[3] - 43) as usize];
+        let c = R_B64TABLE[usize::from(src[2] - TABLE_OFFSET)];
+        let d = R_B64TABLE[usize::from(src[3] - TABLE_OFFSET)];
         dst[1] = (b << 4) | ((c >> 2) & 0b0000_1111);
-        dst[2] = (c << 6) | d
+        dst[2] = (c << 6) | d;
+        n = 3
     }
 
     return n
@@ -143,7 +158,7 @@ fn main() -> io::Result<()> {
         std::process::exit(0)
     }
 
-    // setup a buffer to receive data from stdin|file, note a filename of "-" implies stdin
+    // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
     let mut buffer = Vec::new();
     if arg_match.free.is_empty() || arg_match.free[0] == "-" {
         io::stdin().read_to_end(&mut buffer)
@@ -155,12 +170,12 @@ fn main() -> io::Result<()> {
 
     let mut src = [0; 3];  // original bytes
     let mut dst = [0; 4];  // Base64 bytes
-    let mut n = 0 as usize;
+    let mut n = 0;
     if decode {
         for byte in buffer.bytes() {
             let ch = byte?;
 
-            // formatted Base64 allows for embedded newlines that should be ignored
+            // formatted Base64 allows for embedded newlines ('\n', '\r') that are ignored
             if ch == 10 || ch == 13 {
                 continue
             }
@@ -168,7 +183,7 @@ fn main() -> io::Result<()> {
             dst[n] = ch;
             n += 1;
             if n == 4 {
-                let nbytes = b64_decode(dst, &mut src) as usize;
+                let nbytes = usize::from(b64_decode(dst, &mut src));
                 io::stdout().write_all(&src[0..nbytes])?;
                 n = 0
             }
