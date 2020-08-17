@@ -104,6 +104,7 @@ fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: u8) {
     }
 }
 
+#[allow(clippy::many_single_char_names)]
 fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
     // assert!(0x03 == 0b0000_0011);
     // assert!(0x0f == 0b0000_1111);
@@ -130,7 +131,7 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
         n = 3
     }
 
-    return n
+    n
 }
 
 fn main() -> io::Result<()> {
@@ -202,7 +203,7 @@ fn main() -> io::Result<()> {
                 if pretty {
                     pretty_counter += 1;
                     if pretty_counter == 19 {
-                        io::stdout().write(b"\n")?;
+                        io::stdout().write_all(b"\n")?;
                         pretty_counter = 0
                     }
                 }
@@ -213,7 +214,7 @@ fn main() -> io::Result<()> {
             b64_encode(src, &mut dst, n as u8);
             io::stdout().write_all(&dst)?
         }
-        io::stdout().write(b"\n")?;
+        io::stdout().write_all(b"\n")?;
     }
 
     Ok(())
