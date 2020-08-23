@@ -34,7 +34,6 @@ const TABLE_OFFSET: u8 = 43;
 // Base64 pad character ("=")
 const PAD_CHAR: u8 = 61;
 
-
 /* Algorithm using shifting:
  *
  * bytes[0] = 'A'
@@ -88,13 +87,13 @@ fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: u8) {
             dst[1] = B64TABLE[usize::from((src[0] << 4) & 0b0011_0000)];
             dst[2] = PAD_CHAR;
             dst[3] = PAD_CHAR;
-        },
+        }
 
         2 => {
             dst[1] = B64TABLE[usize::from(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4))];
             dst[2] = B64TABLE[usize::from((src[1] << 2) & 0b0011_1100)];
             dst[3] = PAD_CHAR;
-        },
+        }
 
         _ => {
             dst[1] = B64TABLE[usize::from(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4))];
@@ -109,7 +108,7 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
     // assert!(0x03 == 0b0000_0011);
     // assert!(0x0f == 0b0000_1111);
 
-    let n;  // return value: 1, 2, 3
+    let n; // return value: 1, 2, 3
 
     let a = R_B64TABLE[usize::from(src[0] - TABLE_OFFSET)];
     let b = R_B64TABLE[usize::from(src[1] - TABLE_OFFSET)];
@@ -145,7 +144,7 @@ fn main() -> io::Result<()> {
 
     let arg_match = match opts.parse(&args[1..]) {
         Ok(o)  => o,
-        Err(e) => panic!(e.to_string())
+        Err(e) => panic!(e.to_string()),
     };
 
     let encode = arg_match.opt_present("e");
@@ -162,15 +161,17 @@ fn main() -> io::Result<()> {
     // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
     let mut buffer = Vec::new();
     if arg_match.free.is_empty() || arg_match.free[0] == "-" {
-        io::stdin().read_to_end(&mut buffer)
+        io::stdin()
+            .read_to_end(&mut buffer)
             .expect("read_to_end() failure");
     } else {
-        File::open(arg_match.free[0].clone())?.read_to_end(&mut buffer)
+        File::open(arg_match.free[0].clone())?
+            .read_to_end(&mut buffer)
             .expect("read_to_end() failure");
     }
 
-    let mut src = [0; 3];  // original bytes
-    let mut dst = [0; 4];  // Base64 bytes
+    let mut src = [0; 3]; // original bytes
+    let mut dst = [0; 4]; // Base64 bytes
     let mut n = 0;
     if decode {
         for byte in buffer.bytes() {
@@ -178,7 +179,7 @@ fn main() -> io::Result<()> {
 
             // formatted Base64 allows for embedded newlines ('\n', '\r') that are ignored
             if ch == 10 || ch == 13 {
-                continue
+                continue;
             }
 
             dst[n] = ch;
@@ -221,7 +222,10 @@ fn main() -> io::Result<()> {
 }
 
 fn print_usage(program: &str, opts: Options) {
-    let brief = format!("# Rust\nUsage: {} [-encode] [-decode] [-pretty] file|stdin", program);
+    let brief = format!(
+        "# Rust\nUsage: {} [-encode] [-decode] [-pretty] file|stdin",
+        program
+    );
     print!("{}", opts.usage(&brief))
 }
 
