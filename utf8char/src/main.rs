@@ -4,6 +4,18 @@ use std::fs::File;
 use std::io::{self, Read, Write};
 use std::str;
 
+/*
+ * UTF-8
+ *
+ *  Number  | Bits for   |    First   |    Last    |          |          |          |          |
+ * of bytes | code point | code point | code point |  Byte 1  |  Byte 2  |  Byte 3  |  Byte 4  |
+ * ---------------------------------------------------------------------------------------------
+ *     1    |     7      |   U+0000   |  U+007F    | 0xxxxxxx |          |          |          |
+ *     2    |    11      |   U+0080   |  U+07FF    | 110xxxxx | 10xxxxxx |          |          |
+ *     3    |    16      |   U+0800   |  U+FFFF    | 1110xxxx | 10xxxxxx | 10xxxxxx |          |
+ *     4    |    21      |   U+10000  |  U+10FFFF  | 11110xxx | 10xxxxxx | 10xxxxxx | 10xxxxxx |
+ */
+
 // returns the number of bytes representing the utf8 char [1,4]
 fn utf8_char_size(ptr: u8) -> u8 {
     match ptr {
