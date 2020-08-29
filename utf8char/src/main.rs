@@ -35,28 +35,28 @@ fn utf8_char_validate(ptr: &[u8]) -> Result<u8, String> {
             return Err(format!("utf8_char_validate() failed at byte {}", i));
         }
     }
-    return Ok(n)
+    Ok(n)
 }
 
 fn print_usage(program: &str, opts: Options) {
-    let brief = format!(
-        "\nUsage: {} [options] file|stdin",
-        program
-    );
+    let brief = format!("\nUsage: {} [options] file|stdin", program);
     print!("{}", opts.usage(&brief));
-    println!("Example: echo -n '🍺&🍕' | {} -b '[' -a ']'\n[🍺][&][🍕]", program)
+    println!(
+        "Example: echo -n '🍺&🍕' | {} -b '[' -a ']'\n[🍺][&][🍕]",
+        program
+    )
 }
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
 
     let mut opts = Options::new();
-    opts.optopt("b"  , "prefix"  , "prefix string"  , "");
-    opts.optopt("a"  , "postfix" , "postfix string" , "");
-    opts.optflag("h" , "help"    , "usage");
+    opts.optopt("b", "prefix", "prefix string", "");
+    opts.optopt("a", "postfix", "postfix string", "");
+    opts.optflag("h", "help", "usage");
 
     let arg_match = match opts.parse(&args[1..]) {
-        Ok(o)  => o,
+        Ok(o) => o,
         Err(e) => panic!(e.to_string()),
     };
 
@@ -77,18 +77,14 @@ fn main() -> io::Result<()> {
             .expect("read_to_end() failure");
     }
 
-    let bytes = buffer
-        .bytes()
-        .map(|b| b.unwrap())
-        .collect::<Vec<u8>>();
+    let bytes = buffer.bytes().map(|b| b.unwrap()).collect::<Vec<u8>>();
 
     let mut i = 0;
     while i < bytes.len() {
         let n = match utf8_char_validate(&bytes[i..]) {
             Ok(n) => n,
-            Err(e) => panic!(e.to_string()),
+            Err(e) => panic!(e),
         };
-
 
         // optional prefix string
         if arg_match.opt_present("b") {
@@ -116,6 +112,3 @@ fn main() -> io::Result<()> {
 
     Ok(())
 }
-
-#[cfg(test)]
-mod test;
