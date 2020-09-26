@@ -1,5 +1,7 @@
+use anyhow::{Context, Result};
 use getopts::Options;
 use std::env;
+use std::error::Error;
 use std::fs::File;
 use std::io::{self, Read, Write};
 use std::str;
@@ -47,7 +49,7 @@ fn print_usage(program: &str, opts: Options) {
     )
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
 
     let mut opts = Options::new();
@@ -57,7 +59,10 @@ fn main() -> io::Result<()> {
 
     let arg_match = match opts.parse(&args[1..]) {
         Ok(o) => o,
-        Err(e) => panic!(e.to_string()),
+        Err(e) => {
+            print_usage(&args[0], opts);
+            return Err(e.into());
+        }
     };
 
     if arg_match.opt_present("h") {
@@ -70,11 +75,12 @@ fn main() -> io::Result<()> {
     if arg_match.free.is_empty() || arg_match.free[0] == "-" {
         io::stdin()
             .read_to_end(&mut buffer)
-            .expect("read_to_end() failure");
+            .with_context(|| "could not read `stdin`")?;
     } else {
-        File::open(arg_match.free[0].clone())?
+        File::open(&arg_match.free[0])
+            .with_context(|| format!("could not open file `{}`", arg_match.free[0]))?
             .read_to_end(&mut buffer)
-            .expect("read_to_end() failure");
+            .with_context(|| format!("could not read file `{}`", arg_match.free[0]))?;
     }
 
     let bytes = buffer.bytes().map(|b| b.unwrap()).collect::<Vec<u8>>();
@@ -83,7 +89,7 @@ fn main() -> io::Result<()> {
     while i < bytes.len() {
         let n = match utf8_char_validate(&bytes[i..]) {
             Ok(n) => n,
-            Err(e) => panic!(e),
+            Err(e) => return Err(e.into()),
         };
 
         // optional prefix string
@@ -103,7 +109,7 @@ fn main() -> io::Result<()> {
         // internal validation & debug
         let _character = match str::from_utf8(character_bytes) {
             Ok(ch) => ch,
-            Err(e) => panic!(e.to_string()),
+            Err(e) => return Err(e.into()),
         };
         //println!("\n{} {:02x?}", _character, character_bytes);
 
