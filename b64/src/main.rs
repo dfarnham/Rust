@@ -1,5 +1,7 @@
+use anyhow::{Context, Result};
 use getopts::Options;
 use std::env;
+use std::error::Error;
 use std::fs::File;
 use std::io::{self, Read, Write};
 
@@ -133,7 +135,7 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
     n
 }
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
 
     let mut opts = Options::new();
@@ -143,19 +145,22 @@ fn main() -> io::Result<()> {
     opts.optflag("h", "help",   "usage");
 
     let arg_match = match opts.parse(&args[1..]) {
-        Ok(o)  => o,
-        Err(e) => panic!(e.to_string()),
+        Ok(o) => o,
+        Err(e) => {
+            print_usage(&args[0], opts);
+            return Err(e.into());
+        }
     };
 
     let encode = arg_match.opt_present("e");
     let decode = arg_match.opt_present("d");
     let pretty = arg_match.opt_present("p");
 
-    // malformed to specify both -encode and -decode
-    // not specifying a mode implies -encode
+    // --encode, --decode are mutually exclusive
+    // not specifying a mode implies --encode
     if encode && decode || arg_match.opt_present("h") {
         print_usage(&args[0], opts);
-        std::process::exit(0)
+        return Err("options --encode, --decode are mutually exclusive".into());
     }
 
     // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
@@ -163,11 +168,12 @@ fn main() -> io::Result<()> {
     if arg_match.free.is_empty() || arg_match.free[0] == "-" {
         io::stdin()
             .read_to_end(&mut buffer)
-            .expect("read_to_end() failure");
+            .with_context(|| "could not read `stdin`")?;
     } else {
-        File::open(arg_match.free[0].clone())?
+        File::open(&arg_match.free[0])
+            .with_context(|| format!("could not open file `{}`", arg_match.free[0]))?
             .read_to_end(&mut buffer)
-            .expect("read_to_end() failure");
+            .with_context(|| format!("could not read file `{}`", arg_match.free[0]))?;
     }
 
     let mut src = [0; 3]; // original bytes
@@ -223,7 +229,7 @@ fn main() -> io::Result<()> {
 
 fn print_usage(program: &str, opts: Options) {
     let brief = format!(
-        "# Rust\nUsage: {} [-encode] [-decode] [-pretty] file|stdin",
+        "Usage: {} [-encode] [-decode] [-pretty] file|stdin",
         program
     );
     print!("{}", opts.usage(&brief))
