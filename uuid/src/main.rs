@@ -61,7 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             io::stdin()
                 .read_to_end(&mut buffer)
                 .with_context(|| "could not read `stdin`")?;
-            "-".into()
+            "<stdin>".into()
         }
     };
 
