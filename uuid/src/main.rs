@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     )]
     struct Cli {
         // Input file
-        #[structopt(parse(from_os_str))]
+        #[structopt(parse(from_os_str), help = "file|stdin")]
         input: Option<std::path::PathBuf>,
 
         // Version 4
