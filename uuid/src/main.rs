@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Quiet mode
         #[structopt(short, long, help = "Quiet mode - only the checksum is printed out")]
         quiet: bool,
-    };
+    }
 
     let args = Cli::from_args();
 
