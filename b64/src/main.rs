@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::{self, Read, Write};
 
 // Base64 alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+#[rustfmt::skip]
 const B64TABLE: [u8; 64] = [
      65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  // "ABCDEFGHIJKLM"
      78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  // "NOPQRSTUVWXYZ"
@@ -17,6 +18,7 @@ const B64TABLE: [u8; 64] = [
 ];
 
 // Reverse index that yields the 6 bit value (position in the alphabet)
+#[rustfmt::skip]
 const R_B64TABLE: [u8; 80] = [
     62,                                                  // "+"
      0,  0,  0,                                          // unused
@@ -78,7 +80,7 @@ const PAD_CHAR: u8 = 61;
  *
  */
 
-fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: u8) {
+fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: usize) {
     // assert!(0x30 == 0b0011_0000);
     // assert!(0x3c == 0b0011_1100);
     // assert!(0x3f == 0b0011_1111);
@@ -86,39 +88,39 @@ fn b64_encode(src: [u8; 3], dst: &mut [u8; 4], n: u8) {
     dst[0] = B64TABLE[(src[0] >> 2) as usize];
     match n {
         1 => {
-            dst[1] = B64TABLE[((src[0] << 4) & 0b0011_0000) as usize];
+            dst[1] = B64TABLE[(src[0] << 4 & 0b0011_0000) as usize];
             dst[2] = PAD_CHAR;
             dst[3] = PAD_CHAR;
         }
 
         2 => {
-            dst[1] = B64TABLE[(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4)) as usize];
-            dst[2] = B64TABLE[((src[1] << 2) & 0b0011_1100) as usize];
+            dst[1] = B64TABLE[((src[0] << 4 & 0b0011_0000) | src[1] >> 4) as usize];
+            dst[2] = B64TABLE[(src[1] << 2 & 0b0011_1100) as usize];
             dst[3] = PAD_CHAR;
         }
 
         _ => {
-            dst[1] = B64TABLE[(((src[0] << 4) & 0b0011_0000) | (src[1] >> 4)) as usize];
-            dst[2] = B64TABLE[(((src[1] << 2) & 0b0011_1100) | (src[2] >> 6)) as usize];
+            dst[1] = B64TABLE[((src[0] << 4 & 0b0011_0000) | src[1] >> 4) as usize];
+            dst[2] = B64TABLE[((src[1] << 2 & 0b0011_1100) | src[2] >> 6) as usize];
             dst[3] = B64TABLE[(src[2] & 0b0011_1111) as usize];
         }
     }
 }
 
-fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
+fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> usize {
     // assert!(0x03 == 0b0000_0011);
     // assert!(0x0f == 0b0000_1111);
 
     let a = R_B64TABLE[(src[0] - TABLE_OFFSET) as usize];
     let b = R_B64TABLE[(src[1] - TABLE_OFFSET) as usize];
-    dst[0] = (a << 2) | ((b >> 4) & 0b0000_0011);
+    dst[0] = (a << 2) | (b >> 4 & 0b0000_0011);
 
     match src[3] {
         PAD_CHAR => match src[2] {
             PAD_CHAR => 1,
             _ => {
                 let c = R_B64TABLE[(src[2] - TABLE_OFFSET) as usize];
-                dst[1] = (b << 4) | ((c >> 2) & 0b0000_1111);
+                dst[1] = (b << 4) | (c >> 2 & 0b0000_1111);
                 2
             }
         },
@@ -126,7 +128,7 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> u8 {
         _ => {
             let c = R_B64TABLE[(src[2] - TABLE_OFFSET) as usize];
             let d = R_B64TABLE[(src[3] - TABLE_OFFSET) as usize];
-            dst[1] = (b << 4) | ((c >> 2) & 0b0000_1111);
+            dst[1] = (b << 4) | (c >> 2 & 0b0000_1111);
             dst[2] = (c << 6) | d;
             3
         }
@@ -140,7 +142,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     opts.optflag("e", "encode", "encode to Base64 (default)");
     opts.optflag("d", "decode", "decode from Base64");
     opts.optflag("p", "pretty", "break output into lines of length 76");
-    opts.optflag("h", "help",   "usage");
+    opts.optflag("h", "help", "usage");
 
     let arg_match = match opts.parse(&args[1..]) {
         Ok(o) => o,
@@ -162,7 +164,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
-    let mut buffer = Vec::new();
+    let mut buffer = vec![];
     if arg_match.free.is_empty() || arg_match.free[0] == "-" {
         io::stdin()
             .read_to_end(&mut buffer)
@@ -189,7 +191,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             dst[n] = ch;
             n += 1;
             if n == 4 {
-                let nbytes = (b64_decode(dst, &mut src)) as usize;
+                let nbytes = b64_decode(dst, &mut src);
                 io::stdout().write_all(&src[0..nbytes])?;
                 n = 0;
             }
@@ -207,16 +209,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                 // output a newline every 76 bytes when pretty printing
                 if pretty {
                     pretty_counter += 1;
-                    if pretty_counter == 19 {
+                    if pretty_counter % 19 == 0 {
                         io::stdout().write_all(b"\n")?;
-                        pretty_counter = 0;
                     }
                 }
                 n = 0;
             }
         }
         if n > 0 {
-            b64_encode(src, &mut dst, n as u8);
+            b64_encode(src, &mut dst, n);
             io::stdout().write_all(&dst)?
         }
         io::stdout().write_all(b"\n")?;
