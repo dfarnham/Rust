@@ -69,7 +69,7 @@ impl WordBoundaryTokenizer {
         !self.excluded_boundary_chars.contains(c) && REGEX_BOUNDARY_CHAR.is_match(&("X".to_string() + &c.to_string()))
     }
 
-    // this is 30% faster than the equivalent nom_tokens() implementation below
+    // this is 30% faster than the equivalent nom_tokens() implementation
     //
     // return a list of enum Token<'a> of type B or T (Boundary or Token)
     // each Token holds a reference into the input string
@@ -192,9 +192,9 @@ mod tests {
 
     #[test]
     fn empty() {
-        let input = "";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = "";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -204,11 +204,11 @@ mod tests {
     }
 
     #[test]
-    fn empty_allowed() {
-        let allowed = "";
-        let input = "";
-        let wbt = WordBoundaryTokenizer::new(allowed);
+    fn empty_excluded() {
+        let excluded = "";
+        let wbt = WordBoundaryTokenizer::new(excluded);
 
+        let input = "";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -219,9 +219,9 @@ mod tests {
 
     #[test]
     fn b() {
-        let input = ",";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = ",";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -232,9 +232,9 @@ mod tests {
 
     #[test]
     fn t() {
-        let input = "a";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = "a";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -245,9 +245,9 @@ mod tests {
 
     #[test]
     fn bb() {
-        let input = ",,";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = ",,";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -258,9 +258,9 @@ mod tests {
 
     #[test]
     fn tt() {
-        let input = "aa";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = "aa";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -271,9 +271,9 @@ mod tests {
 
     #[test]
     fn bt() {
-        let input = ",a";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = ",a";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -284,9 +284,9 @@ mod tests {
 
     #[test]
     fn tb() {
-        let input = "a,";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = "a,";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -297,9 +297,9 @@ mod tests {
 
     #[test]
     fn btb() {
-        let input = ",a;";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = ",a;";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -310,9 +310,9 @@ mod tests {
 
     #[test]
     fn tbt() {
-        let input = "a,b";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = "a,b";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -323,9 +323,9 @@ mod tests {
 
     #[test]
     fn bbt() {
-        let input = ",;a";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = ",;a";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -336,9 +336,9 @@ mod tests {
 
     #[test]
     fn ttb() {
-        let input = "ab,";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = "ab,";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -349,9 +349,9 @@ mod tests {
 
     #[test]
     fn btt() {
-        let input = ",ab";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = ",ab";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -362,9 +362,9 @@ mod tests {
 
     #[test]
     fn tbb() {
-        let input = "a,;";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = "a,;";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -375,9 +375,9 @@ mod tests {
 
     #[test]
     fn bttb() {
-        let input = ",ab;";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = ",ab;";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -388,9 +388,9 @@ mod tests {
 
     #[test]
     fn tbbt() {
-        let input = "a,;b";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = "a,;b";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -401,9 +401,9 @@ mod tests {
 
     #[test]
     fn bbtbb() {
-        let input = ",;a.!";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = ",;a.!";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -414,9 +414,9 @@ mod tests {
 
     #[test]
     fn ttbtt() {
-        let input = "ab,cd";
         let wbt = WordBoundaryTokenizer::default();
 
+        let input = "ab,cd";
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -426,12 +426,11 @@ mod tests {
     }
 
     #[test]
-    fn emoji_allowed() {
-        let allowed = "'🍺🍕";
+    fn emoji_excluded() {
+        let excluded = "'🍺🍕";
+        let wbt = WordBoundaryTokenizer::new(excluded);
+
         let input = "Don't forget the 🍺+🍕 party!x";
-
-        let wbt = WordBoundaryTokenizer::new(allowed);
-
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
@@ -471,11 +470,10 @@ mod tests {
 
     #[test]
     fn other() {
-        let allowed = "'¡";
+        let excluded = "'¡";
+        let wbt = WordBoundaryTokenizer::new(excluded);
+
         let input = "Thorbjørn Risager, Sinéad O'Connor, ¡Americano!";
-
-        let wbt = WordBoundaryTokenizer::new(allowed);
-
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
