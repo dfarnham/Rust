@@ -168,7 +168,6 @@ impl WordBoundaryTokenizer {
         Ok(tokens)
     }
 
-
     // filters the list on Token::T() and returns a list of their references
     pub fn words<'a>(&self, text: &'a str) -> Result<Vec<&'a str>, Box<dyn Error>> {
         Ok(self
@@ -199,6 +198,20 @@ mod tests {
     fn empty() {
         let input = "";
         let wbt = WordBoundaryTokenizer::default();
+
+        let tokens = wbt.tokens(input);
+        let nom_tokens = wbt.nom_tokens(input);
+        assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
+
+        assert_eq!(tokens.as_ref().unwrap(), &vec![]);
+        assert_eq!(input, Token::joined(&tokens.unwrap()));
+    }
+
+    #[test]
+    fn empty_allowed() {
+        let allowed = "";
+        let input = "";
+        let wbt = WordBoundaryTokenizer::new(allowed);
 
         let tokens = wbt.tokens(input);
         let nom_tokens = wbt.nom_tokens(input);
@@ -313,6 +326,58 @@ mod tests {
     }
 
     #[test]
+    fn bbt() {
+        let input = ",;a";
+        let wbt = WordBoundaryTokenizer::default();
+
+        let tokens = wbt.tokens(input);
+        let nom_tokens = wbt.nom_tokens(input);
+        assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
+
+        assert_eq!(tokens.as_ref().unwrap(), &vec![B(",;"), T("a")]);
+        assert_eq!(input, Token::joined(&tokens.unwrap()));
+    }
+
+    #[test]
+    fn ttb() {
+        let input = "ab,";
+        let wbt = WordBoundaryTokenizer::default();
+
+        let tokens = wbt.tokens(input);
+        let nom_tokens = wbt.nom_tokens(input);
+        assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
+
+        assert_eq!(tokens.as_ref().unwrap(), &vec![T("ab"), B(",")]);
+        assert_eq!(input, Token::joined(&tokens.unwrap()));
+    }
+
+    #[test]
+    fn btt() {
+        let input = ",ab";
+        let wbt = WordBoundaryTokenizer::default();
+
+        let tokens = wbt.tokens(input);
+        let nom_tokens = wbt.nom_tokens(input);
+        assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
+
+        assert_eq!(tokens.as_ref().unwrap(), &vec![B(","), T("ab")]);
+        assert_eq!(input, Token::joined(&tokens.unwrap()));
+    }
+
+    #[test]
+    fn tbb() {
+        let input = "a,;";
+        let wbt = WordBoundaryTokenizer::default();
+
+        let tokens = wbt.tokens(input);
+        let nom_tokens = wbt.nom_tokens(input);
+        assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
+
+        assert_eq!(tokens.as_ref().unwrap(), &vec![T("a"), B(",;")]);
+        assert_eq!(input, Token::joined(&tokens.unwrap()));
+    }
+
+    #[test]
     fn bttb() {
         let input = ",ab;";
         let wbt = WordBoundaryTokenizer::default();
@@ -365,33 +430,7 @@ mod tests {
     }
 
     #[test]
-    fn bbt() {
-        let input = ",;a";
-        let wbt = WordBoundaryTokenizer::default();
-
-        let tokens = wbt.tokens(input);
-        let nom_tokens = wbt.nom_tokens(input);
-        assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
-
-        assert_eq!(tokens.as_ref().unwrap(), &vec![B(",;"), T("a")]);
-        assert_eq!(input, Token::joined(&tokens.unwrap()));
-    }
-
-    #[test]
-    fn ttb() {
-        let input = "ab,";
-        let wbt = WordBoundaryTokenizer::default();
-
-        let tokens = wbt.tokens(input);
-        let nom_tokens = wbt.nom_tokens(input);
-        assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
-
-        assert_eq!(tokens.as_ref().unwrap(), &vec![T("ab"), B(",")]);
-        assert_eq!(input, Token::joined(&tokens.unwrap()));
-    }
-
-    #[test]
-    fn test1() {
+    fn emoji_allowed() {
         let allowed = "'🍺🍕";
         let input = "Don't forget the 🍺+🍕 party!x";
 
@@ -435,9 +474,9 @@ mod tests {
     }
 
     #[test]
-    fn test2() {
-        let allowed = "'";
-        let input = "'";
+    fn other() {
+        let allowed = "'¡";
+        let input = "Thorbjørn Risager, Sinéad O'Connor, ¡Americano!";
 
         let wbt = WordBoundaryTokenizer::new(allowed);
 
@@ -445,21 +484,10 @@ mod tests {
         let nom_tokens = wbt.nom_tokens(input);
         assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
 
-        assert_eq!(tokens.as_ref().unwrap(), &vec![T("'")]);
-        assert_eq!(input, Token::joined(&tokens.unwrap()));
-    }
-
-    #[test]
-    fn test3() {
-        let input = "'";
-
-        let wbt = WordBoundaryTokenizer::default();
-
-        let tokens = wbt.tokens(input);
-        let nom_tokens = wbt.nom_tokens(input);
-        assert_eq!(tokens.as_ref().unwrap(), nom_tokens.as_ref().unwrap());
-
-        assert_eq!(tokens.as_ref().unwrap(), &vec![B("'")]);
-        assert_eq!(input, Token::joined(&tokens.unwrap()));
+        let text_words = wbt.text_words(input);
+        assert_eq!(
+            text_words.as_ref().unwrap(),
+            &vec!["Thorbjørn", "Risager", "Sinéad", "O'Connor", "¡Americano"]
+        );
     }
 }
