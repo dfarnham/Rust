@@ -2,11 +2,11 @@
 name = "uuid"
 version = "0.1.0"
 authors = ["Dave Farnham <dave.farnham@icloud.com>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow    = "1.0"
 structopt = "0.3"
-uuid      = { version = "0.8", features = ["v4", "v5"] }
+uuid      = { version = "0.8.2", features = ["v4", "v5"] }

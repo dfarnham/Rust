@@ -6,8 +6,8 @@ use structopt::StructOpt;
 use uuid::Uuid;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // =================================
-    // start command line option parsing
+    // ===========================
+    // command line option parsing
 
     #[derive(StructOpt)]
     #[structopt(
@@ -35,7 +35,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let args = Cli::from_args();
 
-    // end command line option parsing
     // ===============================
 
     // option --v4 -- output a version 4 random uuid and exit
