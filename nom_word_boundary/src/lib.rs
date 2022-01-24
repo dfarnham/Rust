@@ -47,26 +47,26 @@ impl<'a> Token<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
 pub struct WordBoundaryTokenizer {
-    exclude_boundary_chars: String,
+    // chars in "excluded_boundary_chars" that would typically return true on Regex \b that will now return false
+    excluded_boundary_chars: String,
 }
 impl WordBoundaryTokenizer {
     pub fn default() -> Self {
         Self::new("")
     }
-    pub fn new(exclude_boundary_chars: &str) -> Self {
+
+    pub fn new(excluded_boundary_chars: &str) -> Self {
         Self {
-            exclude_boundary_chars: exclude_boundary_chars.to_string(),
+            excluded_boundary_chars: excluded_boundary_chars.into(),
         }
     }
 
-    fn is_regex_boundary(c: char) -> bool {
+    pub fn boundary_predicate(&self, c: char) -> bool {
         lazy_static! {
-            static ref WORD_BOUNDARY: Regex = Regex::new(r"^X\b").unwrap();
+            static ref REGEX_BOUNDARY_CHAR: Regex = Regex::new(r"^X\b").unwrap();
         }
-        let xc = "X".to_string() + &c.to_string();
-        WORD_BOUNDARY.is_match(&xc)
+        !self.excluded_boundary_chars.contains(c) && REGEX_BOUNDARY_CHAR.is_match(&("X".to_string() + &c.to_string()))
     }
 
     // this is 30% faster than the equivalent nom_tokens() implementation below
@@ -77,9 +77,6 @@ impl WordBoundaryTokenizer {
     // joining the contents of the list would reproduce the input
     //    assert_eq!(Token::joined(&tokens), input);
     pub fn tokens<'a>(&self, input: &'a str) -> Result<Vec<Token<'a>>, Box<dyn Error>> {
-        let boundary_predicate =
-            |c| !&self.exclude_boundary_chars.contains(c) && WordBoundaryTokenizer::is_regex_boundary(c);
-
         let mut i = 0;
         let mut b = 0;
         let mut t = 0;
@@ -89,7 +86,7 @@ impl WordBoundaryTokenizer {
             // str references are being returned (indexed by utf8 units)
             let c_len = c.len_utf8();
 
-            if boundary_predicate(c) {
+            if self.boundary_predicate(c) {
                 // finalize previous token if needed
                 if i > t {
                     tokens.push(Token::T(&input[t..i]));
@@ -123,8 +120,7 @@ impl WordBoundaryTokenizer {
     // joining the contents of the list would reproduce the input
     //    assert_eq!(Token::joined(&tokens), input);
     pub fn nom_tokens<'a>(&self, input: &'a str) -> Result<Vec<Token<'a>>, Box<dyn Error + 'a>> {
-        let boundary_predicate =
-            |c| !&self.exclude_boundary_chars.contains(c) && WordBoundaryTokenizer::is_regex_boundary(c);
+        let boundary_predicate = |c| self.boundary_predicate(c);
 
         // The parser walks the input emitting a pair (Token::B, Token::T)
         // either of which may be empty, but not both (the stopping condition)
@@ -168,7 +164,7 @@ impl WordBoundaryTokenizer {
         Ok(tokens)
     }
 
-    // filters the list on Token::T() and returns a list of their references
+    // filters the tokens on Token::T() and returns a list of their references
     pub fn words<'a>(&self, text: &'a str) -> Result<Vec<&'a str>, Box<dyn Error>> {
         Ok(self
             .tokens(text)?
@@ -178,7 +174,7 @@ impl WordBoundaryTokenizer {
             .collect::<Vec<_>>())
     }
 
-    // filters the list on Token::T() and returns a list of their references.to_string()
+    // filters the tokens on Token::T() and returns a list of their references.to_string()
     pub fn text_words(&self, text: &str) -> Result<Vec<String>, Box<dyn Error>> {
         Ok(self
             .tokens(text)?
