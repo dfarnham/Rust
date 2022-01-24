@@ -47,7 +47,7 @@ impl<'a> Token<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct WordBoundaryTokenizer {
     exclude_boundary_chars: String,
 }
@@ -55,7 +55,7 @@ impl WordBoundaryTokenizer {
     pub fn default() -> Self {
         Self::new("")
     }
-    pub fn new(exclude_boundary_chars: &'static str) -> Self {
+    pub fn new(exclude_boundary_chars: &str) -> Self {
         Self {
             exclude_boundary_chars: exclude_boundary_chars.to_string(),
         }
