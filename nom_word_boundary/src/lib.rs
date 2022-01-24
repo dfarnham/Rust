@@ -13,8 +13,7 @@ extern crate lazy_static;
 
 #[derive(Debug, Clone, PartialEq)]
 // a Token<'a> of type B or T (Boundary or Token)
-// each Token holds a reference into an input string which was
-// parsed by a nom parser https://github.com/Geal/nom
+// each Token holds a reference into an input string
 pub enum Token<'a> {
     B(&'a str),
     T(&'a str),
@@ -47,6 +46,7 @@ impl<'a> Token<'a> {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct WordBoundaryTokenizer {
     // chars in "excluded_boundary_chars" that would typically return true on Regex \b that will now return false
     excluded_boundary_chars: String,
