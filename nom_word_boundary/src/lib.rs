@@ -69,6 +69,53 @@ impl WordBoundaryTokenizer {
         WORD_BOUNDARY.is_match(&xc)
     }
 
+    // this is 30% faster than the equivalent nom_tokens() implementation below
+    //
+    // return a list of enum Token<'a> of type B or T (Boundary or Token)
+    // each Token holds a reference into the input string
+    //
+    // joining the contents of the list would reproduce the input
+    //    assert_eq!(Token::joined(&tokens), input);
+    pub fn tokens<'a>(&self, input: &'a str) -> Result<Vec<Token<'a>>, Box<dyn Error>> {
+        let boundary_predicate =
+            |c| !&self.exclude_boundary_chars.contains(c) && WordBoundaryTokenizer::is_regex_boundary(c);
+
+        let mut i = 0;
+        let mut b = 0;
+        let mut t = 0;
+        let mut tokens = vec![];
+
+        for c in input.chars() {
+            // str references are being returned (indexed by utf8 units)
+            let c_len = c.len_utf8();
+
+            if boundary_predicate(c) {
+                // finalize previous token if needed
+                if i > t {
+                    tokens.push(Token::T(&input[t..i]));
+                }
+                i += c_len;
+                t = i;
+            } else {
+                // finalize previous boundary if needed
+                if i > b {
+                    tokens.push(Token::B(&input[b..i]));
+                }
+                i += c_len;
+                b = i;
+            }
+        }
+
+        // finalize the token which was last being processed
+        if i > b {
+            tokens.push(Token::B(&input[b..i]));
+        } else if i > t {
+            tokens.push(Token::T(&input[t..i]));
+        }
+
+        Ok(tokens)
+    }
+
     // return a list of enum Token<'a> of type B or T (Boundary or Token)
     // each Token holds a reference into the input string as found by the
     // nom parser https://github.com/Geal/nom
@@ -121,49 +168,9 @@ impl WordBoundaryTokenizer {
         Ok(tokens)
     }
 
-    // this is 30% faster than nom_tokens()
-    pub fn tokens<'a>(&self, input: &'a str) -> Result<Vec<Token<'a>>, Box<dyn Error>> {
-        let boundary_predicate =
-            |c| !&self.exclude_boundary_chars.contains(c) && WordBoundaryTokenizer::is_regex_boundary(c);
-
-        let mut i = 0;
-        let mut b = 0;
-        let mut t = 0;
-        let mut tokens = vec![];
-
-        for c in input.chars() {
-            // str references are being returned (indexed by utf8 units)
-            let c_len = c.len_utf8();
-
-            if boundary_predicate(c) {
-                // finalize previous token if needed
-                if i > t {
-                    tokens.push(Token::T(&input[t..i]));
-                }
-                i += c_len;
-                t = i;
-            } else {
-                // finalize previous boundary if needed
-                if i > b {
-                    tokens.push(Token::B(&input[b..i]));
-                }
-                i += c_len;
-                b = i;
-            }
-        }
-
-        // finalize the token which was last being processed
-        if i > b {
-            tokens.push(Token::B(&input[b..i]));
-        } else if i > t {
-            tokens.push(Token::T(&input[t..i]));
-        }
-
-        Ok(tokens)
-    }
 
     // filters the list on Token::T() and returns a list of their references
-    pub fn words<'a>(&self, text: &'a str) -> Result<Vec<&'a str>, Box<dyn Error + 'a>> {
+    pub fn words<'a>(&self, text: &'a str) -> Result<Vec<&'a str>, Box<dyn Error>> {
         Ok(self
             .tokens(text)?
             .into_iter()
@@ -173,7 +180,7 @@ impl WordBoundaryTokenizer {
     }
 
     // filters the list on Token::T() and returns a list of their references.to_string()
-    pub fn text_words<'a>(&self, text: &'a str) -> Result<Vec<String>, Box<dyn Error + 'a>> {
+    pub fn text_words(&self, text: &str) -> Result<Vec<String>, Box<dyn Error>> {
         Ok(self
             .tokens(text)?
             .iter()
