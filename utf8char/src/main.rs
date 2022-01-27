@@ -47,7 +47,7 @@ fn print_usage(program: &str, opts: Options) {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let args: Vec<String> = env::args().collect();
+    let args: Vec<_> = env::args().collect();
 
     let mut opts = Options::new();
     opts.optopt("b", "prefix", "prefix string", "");

@@ -136,7 +136,7 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> usize {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let args: Vec<String> = env::args().collect();
+    let args: Vec<_> = env::args().collect();
 
     let mut opts = Options::new();
     opts.optflag("e", "encode", "encode to Base64 (default)");
