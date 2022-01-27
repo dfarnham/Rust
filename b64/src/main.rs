@@ -196,7 +196,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 n = 0;
             }
         }
-        assert!(n == 0, "final {} bytes were not decoded", n);
+        assert!(n == 0, "final {n} bytes were not decoded");
     } else {
         let mut pretty_counter = 0;
         for byte in buffer.bytes() {
