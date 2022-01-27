@@ -47,7 +47,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
-    let mut buffer = Vec::new();
+    let mut buffer = vec![];
     let input_name: String = match args.input {
         Some(file) if file.as_os_str() != "-" => {
             File::open(&file)
@@ -67,8 +67,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // compute a version 5 uuid using namespace OID on the input
     let uuid5 = Uuid::new_v5(&Uuid::NAMESPACE_OID, &buffer);
     match args.quiet {
-        true => println!("{}", uuid5),
-        false => println!("uuid5 ({}) = {}", input_name, uuid5),
+        true => println!("{uuid5}"),
+        false => println!("uuid5 ({input_name}) = {uuid5}"),
     }
 
     Ok(())

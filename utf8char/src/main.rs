@@ -34,7 +34,7 @@ fn utf8_char_validate(ptr: &[u8]) -> Result<u8, String> {
 
     for i in 1..n {
         if (ptr[i as usize] & 0xc0) != 0x80 {
-            return Err(format!("utf8_char_validate() failed at byte {}", i));
+            return Err(format!("utf8_char_validate() failed at byte {i}"));
         }
     }
     Ok(n)
