@@ -43,10 +43,7 @@ fn utf8_char_validate(ptr: &[u8]) -> Result<u8, String> {
 fn print_usage(program: &str, opts: Options) {
     let brief = format!("\nUsage: {} [options] file|stdin", program);
     print!("{}", opts.usage(&brief));
-    println!(
-        "Example: echo -n '🍺&🍕' | {} -b '[' -a ']'\n[🍺][&][🍕]",
-        program
-    )
+    println!("Example: echo -n '🍺&🍕' | {} -b '[' -a ']'\n[🍺][&][🍕]", program)
 }
 
 fn main() -> Result<(), Box<dyn Error>> {

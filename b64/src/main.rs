@@ -227,10 +227,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn print_usage(program: &str, opts: Options) {
-    let brief = format!(
-        "Usage: {} [-encode] [-decode] [-pretty] file|stdin",
-        program
-    );
+    let brief = format!("Usage: {} [-encode] [-decode] [-pretty] file|stdin", program);
     print!("{}", opts.usage(&brief));
 }
 
