@@ -1,4 +1,5 @@
 [package]
+description = "Base64 Encoder/Decoder"
 name = "b64"
 version = "0.1.0"
 authors = ["Dave Farnham <dave.farnham@icloud.com>"]
