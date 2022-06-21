@@ -152,13 +152,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     };
 
+    if arg_match.opt_present("h") {
+        print_usage(&args[0], opts);
+        std::process::exit(0);
+    }
+
     let encode = arg_match.opt_present("e");
     let decode = arg_match.opt_present("d");
     let pretty = arg_match.opt_present("p");
 
     // --encode, --decode are mutually exclusive
     // not specifying a mode implies --encode
-    if encode && decode || arg_match.opt_present("h") {
+    if encode && decode {
         print_usage(&args[0], opts);
         return Err("options --encode, --decode are mutually exclusive".into());
     }
