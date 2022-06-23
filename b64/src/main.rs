@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
-use getopts::Options;
-use std::env;
+use clap::Parser;
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, Read, Write};
@@ -136,55 +135,52 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> usize {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let args: Vec<_> = env::args().collect();
+    #[derive(Parser, Debug)]
+    #[clap(author, version, about, long_about=None)]
+    struct Args {
+        /// encode to Base64 (default)
+        #[clap(short, long)]
+        encode: bool,
 
-    let mut opts = Options::new();
-    opts.optflag("e", "encode", "encode to Base64 (default)");
-    opts.optflag("d", "decode", "decode from Base64");
-    opts.optflag("p", "pretty", "break output into lines of length 76");
-    opts.optflag("h", "help", "usage");
+        /// decode from Base64
+        #[clap(short, long)]
+        decode: bool,
 
-    let arg_match = match opts.parse(&args[1..]) {
-        Ok(o) => o,
-        Err(e) => {
-            print_usage(&args[0], opts);
-            return Err(e.into());
-        }
-    };
+        /// break output into lines of length 76
+        #[clap(short, long)]
+        pretty: bool,
 
-    if arg_match.opt_present("h") {
-        print_usage(&args[0], opts);
-        std::process::exit(0);
+        /// file
+        #[clap(multiple_values = false)]
+        file: Option<String>,
     }
-
-    let encode = arg_match.opt_present("e");
-    let decode = arg_match.opt_present("d");
-    let pretty = arg_match.opt_present("p");
+    let args = Args::parse();
 
     // --encode, --decode are mutually exclusive
     // not specifying a mode implies --encode
-    if encode && decode {
-        print_usage(&args[0], opts);
+    if args.encode && args.decode {
         return Err("options --encode, --decode are mutually exclusive".into());
     }
 
     // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
     let mut buffer = vec![];
-    if arg_match.free.is_empty() || arg_match.free[0] == "-" {
+    if args.file.is_none() || args.file == Some("-".to_string()) {
         io::stdin()
             .read_to_end(&mut buffer)
             .with_context(|| "could not read `stdin`")?;
-    } else {
-        File::open(&arg_match.free[0])
-            .with_context(|| format!("could not open file `{}`", arg_match.free[0]))?
+    } else if let Some(file) = args.file {
+        File::open(&file)
+            .with_context(|| format!("could not open file `{}`", file))?
             .read_to_end(&mut buffer)
-            .with_context(|| format!("could not read file `{}`", arg_match.free[0]))?;
+            .with_context(|| format!("could not read file `{}`", file))?;
+    } else {
+        return Err("option parsing snafu".into());
     }
 
     let mut src = [0; 3]; // original bytes
     let mut dst = [0; 4]; // Base64 bytes
     let mut n = 0;
-    if decode {
+    if args.decode {
         for byte in buffer.bytes() {
             let ch = byte?;
 
@@ -212,7 +208,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 io::stdout().write_all(&dst)?;
 
                 // output a newline every 76 bytes when pretty printing
-                if pretty {
+                if args.pretty {
                     pretty_counter += 1;
                     if pretty_counter % 19 == 0 {
                         io::stdout().write_all(b"\n")?;
@@ -230,11 +226,3 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
-fn print_usage(program: &str, opts: Options) {
-    let brief = format!("Usage: {} [-encode] [-decode] [-pretty] file|stdin", program);
-    print!("{}", opts.usage(&brief));
-}
-
-#[cfg(test)]
-mod test;
