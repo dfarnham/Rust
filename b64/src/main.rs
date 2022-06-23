@@ -152,7 +152,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         /// file|stdin, filename of "-" implies stdin
         #[clap(multiple_values = false)]
-        file: Option<String>,
+        file: Option<std::path::PathBuf>,
     }
     let args = Args::parse();
 
@@ -164,17 +164,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
     let mut buffer = vec![];
-    if args.file.is_none() || args.file == Some("-".to_string()) {
-        io::stdin()
-            .read_to_end(&mut buffer)
-            .with_context(|| "could not read `stdin`")?;
-    } else if let Some(file) = args.file {
-        File::open(&file)
-            .with_context(|| format!("could not open file `{}`", file))?
-            .read_to_end(&mut buffer)
-            .with_context(|| format!("could not read file `{}`", file))?;
-    } else {
-        return Err("option parsing snafu".into());
+    match args.file {
+        Some(file) if file.as_os_str() != "-" => {
+            File::open(&file)
+                .with_context(|| format!("could not open file `{:?}`", file.as_os_str()))?
+                .read_to_end(&mut buffer)
+                .with_context(|| format!("could not read file `{:?}`", file.as_os_str()))?;
+        }
+        _ => {
+            io::stdin()
+                .read_to_end(&mut buffer)
+                .with_context(|| "could not read `stdin`")?;
+        }
     }
 
     let mut src = [0; 3]; // original bytes
