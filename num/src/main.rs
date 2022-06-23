@@ -1,39 +1,39 @@
 use anyhow::{Context, Result};
-use structopt::StructOpt;
+use clap::Parser;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    #[derive(StructOpt)]
-    #[structopt(name = "num", about = "Number/UTF Representation Converter")]
-    struct Cli {
-        // char
-        #[structopt(short, long, help = "UTF-8 Char,     num -c 🍺")]
+    #[derive(Parser, Debug)]
+    #[clap(author, version, about, long_about=None)]
+    struct Args {
+        /// UTF-8 Char,     num -c 🍺
+        #[clap(short, long)]
         char: Option<String>,
 
-        // binary
-        #[structopt(short, long, help = "Binary,         num -b 11111001101111010")]
+        /// Binary,         num -b 11111001101111010
+        #[clap(short, long)]
         binary: Option<String>,
 
-        // decimal
-        #[structopt(short, long, help = "Decimal,        num -d 127866")]
+        /// Decimal,        num -d 127866
+        #[clap(short, long)]
         decimal: Option<u32>,
 
-        // hex
-        #[structopt(short = "x", long, help = "Hexadecimal,    num -x 1f37a")]
+        /// Hexadecimal,    num -x 1f37a
+        #[clap(short = 'x', long)]
         hex: Option<String>,
 
-        // octal
-        #[structopt(short, long, help = "Octal,          num -o 371572")]
+        /// Octal,          num -o 371572
+        #[clap(short, long)]
         octal: Option<String>,
 
-        // UTF-16
-        #[structopt(short = "U", long, help = "UTF-16,         num -U 'd83c df7a'")]
+        /// UTF-16,         num -U 'd83c df7a'
+        #[clap(short = 'U', long)]
         utf16: Option<String>,
 
-        // UTF-8
-        #[structopt(short = "u", long, help = "UTF-8,          num -u 'f0 9f 8d ba'")]
+        /// UTF-8,          num -u 'f0 9f 8d ba'
+        #[clap(short = 'u', long)]
         utf8: Option<String>,
     }
-    let args = Cli::from_args();
+    let args = Args::parse();
 
     // ==============================================================
     //
@@ -47,8 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         u32::from_str_radix(hex.trim_start_matches("U+").trim_start_matches("0x"), 16)
             .with_context(|| format!("failed to parse '{hex}'"))?
     } else if let Some(octal) = args.octal {
-        u32::from_str_radix(octal.trim_start_matches("0o"), 8)
-            .with_context(|| format!("failed to parse '{octal}'"))?
+        u32::from_str_radix(octal.trim_start_matches("0o"), 8).with_context(|| format!("failed to parse '{octal}'"))?
     } else if let Some(binary) = args.binary {
         u32::from_str_radix(binary.trim_start_matches("0b"), 2)
             .with_context(|| format!("failed to parse '{binary}'"))?
@@ -72,9 +71,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         n = match s.len() {
             // convert hex representations to integers and undo the encoding
             // described at: https://en.wikipedia.org/wiki/UTF-16
-            len if len <= 4 => {
-                u32::from_str_radix(&s, 16).with_context(|| format!("failed to parse '{s}'"))?
-            }
+            len if len <= 4 => u32::from_str_radix(&s, 16).with_context(|| format!("failed to parse '{s}'"))?,
             len if (5..=8).contains(&len) => {
                 let a = u32::from_str_radix(&s[0..len - 4], 16)
                     .with_context(|| format!("failed to parse '{}'", &s[0..len - 4]))?
@@ -97,8 +94,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if !utf8hex.is_empty() {
         n = match utf8hex.len() {
-            2 => u32::from_str_radix(&utf8hex, 16)
-                .with_context(|| format!("failed to parse '{utf8hex}'"))?,
+            2 => u32::from_str_radix(&utf8hex, 16).with_context(|| format!("failed to parse '{utf8hex}'"))?,
             4 => {
                 let a = u32::from_str_radix(&utf8hex[0..=1], 16)
                     .with_context(|| format!("failed to parse '{}'", &utf8hex[0..=1]))?;

@@ -1,7 +1,7 @@
 [package]
 description = "Number/UTF Representation Converter"
 name = "num"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Dave Farnham <dave.farnham@icloud.com>"]
 edition = "2021"
 
@@ -9,4 +9,4 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-structopt = "0.3"
+clap = { version = "3.2.6", features = ["derive"] }
