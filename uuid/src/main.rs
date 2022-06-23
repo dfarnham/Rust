@@ -1,43 +1,36 @@
 use anyhow::{Context, Result};
+use clap::Parser;
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, Read};
-use structopt::StructOpt;
 use uuid::Uuid;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // ===========================
-    // command line option parsing
-
-    #[derive(StructOpt)]
-    #[structopt(
-        name = "uuid",
-        about = "Outputs a Version 5 uuid using namespace OID on the input or a Version 4 random uuid"
-    )]
-    struct Cli {
-        // Input file
-        #[structopt(parse(from_os_str), help = "file|stdin")]
-        input: Option<std::path::PathBuf>,
-
-        // Version 4
-        #[structopt(long, help = "Version 4 uuid -- output a random v4 uuid and exit")]
+    #[derive(Parser, Debug)]
+    #[clap(author, version, about, long_about=None)]
+    struct Args {
+        /// Version 4, output a random v4 uuid
+        #[clap(short = '4')]
         v4: bool,
 
-        // Version 5
+        /// Version 5, namespace OID on the input -- this is the default
         #[allow(dead_code)]
-        #[structopt(long, help = "Version 5 uuid (namespace OID) on the input -- default")]
+        #[clap(short = '5')]
         v5: bool,
 
-        // Quiet mode
-        #[structopt(short, long, help = "Quiet mode - only the checksum is printed out")]
+        /// Quiet mode, output only the UUID, suppress filename
+        #[clap(short, long)]
         quiet: bool,
+
+        /// file|stdin, filename of "-" implies stdin
+        #[clap(parse(from_os_str), multiple_values = false)]
+        file: Option<std::path::PathBuf>,
     }
+    let args = Args::parse();
 
-    let args = Cli::from_args();
+    // ===============================================================
 
-    // ===============================
-
-    // option --v4 -- output a version 4 random uuid and exit
+    // option -4 -- output a version 4 random uuid and exit
     if args.v4 {
         match args.quiet {
             true => println!("{}", Uuid::new_v4()),
@@ -48,7 +41,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
     let mut buffer = vec![];
-    let input_name: String = match args.input {
+    let input_name: String = match args.file {
         Some(file) if file.as_os_str() != "-" => {
             File::open(&file)
                 .with_context(|| format!("could not open file `{:?}`", file.as_os_str()))?
