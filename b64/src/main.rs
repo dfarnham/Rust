@@ -150,7 +150,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         #[clap(short, long)]
         pretty: bool,
 
-        /// file
+        /// file|stdin, filename of "-" implies stdin
         #[clap(multiple_values = false)]
         file: Option<String>,
     }
