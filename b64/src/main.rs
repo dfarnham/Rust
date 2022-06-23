@@ -138,15 +138,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     #[derive(Parser, Debug)]
     #[clap(author, version, about, long_about=None)]
     struct Args {
-        /// encode to Base64 (default)
+        /// Encode to Base64 (default)
         #[clap(short, long)]
         encode: bool,
 
-        /// decode from Base64
+        /// Decode from Base64
         #[clap(short, long)]
         decode: bool,
 
-        /// break output into lines of length 76
+        /// Break output into lines of length 76
         #[clap(short, long)]
         pretty: bool,
 
