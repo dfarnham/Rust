@@ -11,3 +11,4 @@ edition = "2021"
 anyhow = "1.0"
 sha1 = "0.10"
 sha2 = "0.10"
+clap = { version = "3.2", features = ["derive"] }
