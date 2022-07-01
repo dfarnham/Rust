@@ -24,7 +24,7 @@ OPTIONS:
 
 ## num - Number/UTF Representation Converter
 
-~~~sh
+~~~
 Number/UTF Representation Converter
 
 USAGE:
@@ -49,7 +49,7 @@ $ num -c 🍺
 
 ## SHA 1,256
 
-~~~sh
+~~~
 USAGE:
     sha [OPTIONS] [FILE]
 
@@ -85,7 +85,7 @@ Example: echo -n '🍺&🍕' | utf8char -b '[' -a ']'
 
 ## uuid -- uuid version 4,5 utility
 
-~~~sh
+~~~
 UUID v4,v5
 
 USAGE:
