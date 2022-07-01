@@ -3,14 +3,14 @@ Rust Tools / Playground
 
 ## b64 - Base64 encoder/decoder
 
-~~~sh
+~~~
 Base64 Encoder/Decoder
 
 USAGE:
     b64 [OPTIONS] [FILE]
 
 ARGS:
-    \<FILE\>    file|stdin, filename of "\-" implies stdin
+    <FILE>    file|stdin, filename of "-" implies stdin
 
 OPTIONS:
     -d, --decode     Decode from Base64
