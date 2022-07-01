@@ -1,6 +1,27 @@
 # Rust
 Rust Tools / Playground
 
+## b64 - Base64 encoder/decoder
+
+~~~sh
+Base64 Encoder/Decoder
+
+USAGE:
+    b64 [OPTIONS] [FILE]
+
+ARGS:
+    <FILE>    file|stdin, filename of "-" implies stdin
+
+OPTIONS:
+    -d, --decode     Decode from Base64
+    -e, --encode     Encode to Base64 (default)
+    -h, --help       Print help information
+    -p, --pretty     Break output into lines of length 76
+    -V, --version    Print version information
+~~~
+
+---
+
 ## num - Number/UTF Representation Converter
 
 ~~~sh
@@ -9,18 +30,16 @@ Number/UTF Representation Converter
 USAGE:
     num [OPTIONS]
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
 OPTIONS:
-    -b, --binary <binary>      Binary,         num -b 11111001101111010
-    -c, --char <char>          UTF-8 Char,     num -c 🍺
-    -d, --decimal <decimal>    Decimal,        num -d 127866
-    -x, --hex <hex>            Hexadecimal,    num -x 1f37a
-    -o, --octal <octal>        Octal,          num -o 371572
-    -U, --utf16 <utf16>        UTF-16,         num -U 'd83c df7a'
-    -u, --utf8 <utf8>          UTF-8,          num -u 'f0 9f 8d ba'
+    -b, --binary <BINARY>      Binary,         num -b 11111001101111010
+    -c, --char <CHAR>          UTF-8 Char,     num -c 🍺
+    -d, --decimal <DECIMAL>    Decimal,        num -d 127866
+    -h, --help                 Print help information
+    -o, --octal <OCTAL>        Octal,          num -o 371572
+    -u, --utf8 <UTF8>          UTF-8,          num -u 'f0 9f 8d ba'
+    -U, --utf16 <UTF16>        UTF-16,         num -U 'd83c df7a'
+    -V, --version              Print version information
+    -x, --hex <HEX>            Hexadecimal,    num -x 1f37a
 
 $ num -c 🍺
 (Dec) 127866	(Oct) 371572	(Hex) 1f37a	(Bin[15]) 11111001101111010	(UTF-8) f0 9f 8d ba	(UTF-16) d83c df7a	(UTF-8 Char) 🍺
@@ -28,17 +47,22 @@ $ num -c 🍺
 
 ---
 
-## b64 - Base64 encoder/decoder
+## SHA 1,256
 
-~~~sh
-Usage: b64 [-encode] [-decode] [-pretty] file|stdin
+USAGE:
+    sha [OPTIONS] [FILE]
 
-Options:
-    -e, --encode        encode to Base64 (default)
-    -d, --decode        decode from Base64
-    -p, --pretty        break output into lines of length 76
-    -h, --help          usage
-~~~
+ARGS:
+    <FILE>    file|stdin, filename of "-" implies stdin
+
+OPTIONS:
+    -1               The SHA-1 hash function should be considered cryptographically broken:
+                     https://sha-mbles.github.io/
+    -2               SHA-2,256 (default)
+    -5               SHA-2,512
+    -h, --help       Print help information
+    -p               Pretty format which is broken up with whitespace
+    -V, --version    Print version information
 
 ---
 
@@ -60,20 +84,20 @@ Example: echo -n '🍺&🍕' | utf8char -b '[' -a ']'
 ## uuid -- uuid version 4,5 utility
 
 ~~~sh
-Outputs a Version 5 uuid using namespace OID on the input or a Version 4 random uuid
+UUID v4,v5
 
 USAGE:
-    uuid [FLAGS] [input]
-
-FLAGS:
-    -h, --help       Prints help information
-    -q, --quiet      Quiet mode - only the checksum is printed out
-        --v4         Version 4 uuid -- output a random v4 uuid and exit
-        --v5         Version 5 uuid (namespace OID) on the input -- default
-    -V, --version    Prints version information
+    uuid [OPTIONS] [FILE]
 
 ARGS:
-    <input>    file|stdin
+    <FILE>    file|stdin, filename of "-" implies stdin
+
+OPTIONS:
+    -4               Version 4, output a random v4 uuid
+    -5               Version 5, namespace OID on the input -- this is the default
+    -h, --help       Print help information
+    -q, --quiet      Quiet mode, output only the UUID, suppress filename
+    -V, --version    Print version information
 ~~~
 
 ---
