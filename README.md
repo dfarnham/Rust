@@ -10,7 +10,7 @@ USAGE:
     b64 [OPTIONS] [FILE]
 
 ARGS:
-    <FILE>    file|stdin, filename of "-" implies stdin
+    \<FILE\>    file|stdin, filename of "\-" implies stdin
 
 OPTIONS:
     -d, --decode     Decode from Base64
