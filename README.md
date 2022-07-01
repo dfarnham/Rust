@@ -49,6 +49,7 @@ $ num -c 🍺
 
 ## SHA 1,256
 
+~~~sh
 USAGE:
     sha [OPTIONS] [FILE]
 
@@ -63,6 +64,7 @@ OPTIONS:
     -h, --help       Print help information
     -p               Pretty format which is broken up with whitespace
     -V, --version    Print version information
+~~~
 
 ---
 
