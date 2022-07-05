@@ -28,48 +28,55 @@ fn main() -> Result<(), Box<dyn Error>> {
         pretty: bool,
 
         /// file|stdin, filename of "-" implies stdin
-        #[clap(multiple_values = false)]
-        file: Option<std::path::PathBuf>,
+        #[clap(multiple_values = true)]
+        files: Vec<std::path::PathBuf>,
     }
     let args = Args::parse();
 
-    // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
-    let mut buffer = vec![];
-    let input_name: String = match args.file {
-        Some(file) if file.as_os_str() != "-" => {
-            File::open(&file)
-                .with_context(|| format!("could not open file `{:?}`", file.as_os_str()))?
-                .read_to_end(&mut buffer)
-                .with_context(|| format!("could not read file `{:?}`", file.as_os_str()))?;
-            file.to_string_lossy().into()
-        }
-        _ => {
-            io::stdin()
-                .read_to_end(&mut buffer)
-                .with_context(|| "could not read `stdin`")?;
-            "<stdin>".into()
-        }
+    let files = match args.files.is_empty() {
+        true => vec![std::path::PathBuf::from("-")],
+        false => args.files,
     };
 
-    let n = match args.pretty {
-        true => 8,
-        false => usize::MAX,
-    };
+    for file in files {
+        // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
+        let mut buffer = vec![];
+        let input_name: String = match file.as_os_str() != "-" {
+            true => {
+                File::open(&file)
+                    .with_context(|| format!("could not open file `{:?}`", file.as_os_str()))?
+                    .read_to_end(&mut buffer)
+                    .with_context(|| format!("could not read file `{:?}`", file.as_os_str()))?;
+                file.to_string_lossy().into()
+            }
+            false => {
+                io::stdin()
+                    .read_to_end(&mut buffer)
+                    .with_context(|| "could not read `stdin`")?;
+                "<stdin>".into()
+            }
+        };
 
-    let digest = if args.v1 {
-        format!("{:x}", Sha1::digest(buffer))
-    } else if args.v512 {
-        format!("{:x}", Sha512::digest(buffer))
-    } else {
-        format!("{:x}", Sha256::digest(buffer))
-    };
+        let n = match args.pretty {
+            true => 8,
+            false => usize::MAX,
+        };
 
-    for (i, c) in digest.chars().enumerate() {
-        print!("{c}");
-        if (i + 1) % n == 0 {
-            print!(" ");
+        let digest = if args.v1 {
+            format!("{:x}", Sha1::digest(buffer))
+        } else if args.v512 {
+            format!("{:x}", Sha512::digest(buffer))
+        } else {
+            format!("{:x}", Sha256::digest(buffer))
+        };
+
+        for (i, c) in digest.chars().enumerate() {
+            print!("{c}");
+            if (i + 1) % n == 0 {
+                print!(" ");
+            }
         }
+        println!("\t{input_name}");
     }
-    println!("\t{input_name}");
     Ok(())
 }
