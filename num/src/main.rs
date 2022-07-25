@@ -1,3 +1,5 @@
+use ansi_term::ANSIStrings;
+use ansi_term::Colour::{Green, Yellow};
 use anyhow::{Context, Result};
 use clap::Parser;
 
@@ -171,16 +173,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let n_char = std::str::from_utf8(&bytes)
         .with_context(|| format!("std::str::from_utf8 failed converting bytes '{bytes:?}'"))?;
 
+    let gb = Green.bold();
+    let yb = Yellow.bold();
+    let ybu = yb.underline();
+    #[rustfmt::skip]
     println!(
-        "(Dec) {}\t(Oct) {}\t(Hex) {}\t(Bin[{}]) {}\t(UTF-8) {}\t(UTF-16) {}\t(UTF-8 Char) {}",
-        n,
-        n_oct,
-        n_hex,
-        n_bin.len() - 2,
-        n_bin,
-        n_utf8,
-        n_utf16,
-        n_char
+        "{} {}\t{} {}\t{} {}\t{} {}\t{} {}\t{} {}\t{} {}",
+        ANSIStrings(&[yb.paint("("), ybu.paint("Dec"), yb.paint(")")]), gb.paint(n.to_string()),
+        ANSIStrings(&[yb.paint("("), ybu.paint("Oct"), yb.paint(")")]), gb.paint(n_oct),
+        ANSIStrings(&[yb.paint("("), ybu.paint("Hex"), yb.paint(")")]), gb.paint(n_hex),
+        ANSIStrings(&[yb.paint("("), ybu.paint("Bin"), yb.paint("-"), gb.paint(n_bin.len().to_string()), yb.paint(")")]), gb.paint(n_bin),
+        ANSIStrings(&[yb.paint("("), ybu.paint("UTF-8"), yb.paint(")")]), gb.paint(n_utf8),
+        ANSIStrings(&[yb.paint("("), ybu.paint("UTF-16"), yb.paint(")")]), gb.paint(n_utf16),
+        ANSIStrings(&[yb.paint("("), ybu.paint("UTF-8 Char"), yb.paint(")")]), gb.paint(n_char)
     );
 
     Ok(())
