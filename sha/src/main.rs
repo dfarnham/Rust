@@ -1,6 +1,6 @@
-use ansi_term::Colour::{Green, Yellow};
 use anyhow::{Context, Result};
 use clap::Parser;
+use colored::*;
 use sha1::{Digest, Sha1};
 use sha2::Sha256;
 use sha2::Sha512;
@@ -72,14 +72,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         };
 
         for (i, c) in digest.chars().enumerate() {
-            print!("{}", Green.paint(c.to_string()));
+            print!("{}", c.to_string().green());
             //print!("{c}");
             if (i + 1) % n == 0 {
                 print!(" ");
             }
         }
         //println!("\t{input_name}");
-        println!("\t{}", Yellow.bold().paint(input_name));
+        println!("\t{}", input_name.yellow().bold());
     }
     Ok(())
 }

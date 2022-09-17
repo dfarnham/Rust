@@ -8,8 +8,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ansi_term = "0.12"
 anyhow = "1.0"
 clap = { version = "3.2", features = ["derive"] }
+colored = "2.0.0"
 sha1 = "0.10"
 sha2 = "0.10"
