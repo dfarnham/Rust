@@ -1,15 +1,15 @@
 [package]
 description = "SHA 1,256"
 name = "sha"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Dave Farnham <dave.farnham@icloud.com>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0"
-clap = { version = "3.2", features = ["derive"] }
+anyhow = "1"
+clap = { version = "3", features = ["derive"] }
 colored = "2.0.0"
 sha1 = "0.10"
 sha2 = "0.10"
