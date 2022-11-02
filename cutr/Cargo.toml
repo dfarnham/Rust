@@ -1,0 +1,14 @@
+[package]
+description = "Extract selected fields of each line of a file by index, range, or regular expression"
+name = "cutr"
+version = "1.0.0"
+authors = ["Dave Farnham <dave.farnham@icloud.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "3", features = ["derive"] }
+itertools = "0.10"
+regex = "1.6"
