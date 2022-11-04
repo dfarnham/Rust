@@ -117,7 +117,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                         the argument and parameter (example: use -f-2 not -f -2)\n\n\
                         -f rREGEX will apply the REGEX to each field of the \"file header\"\n\
                         after splitting on the -d <delim> to determine the index to output,\n\
-                        where \"file header\" is simply the first line of input",
+                        where \"file header\" is simply the first line of input\n\n\
+                        Note: In order to match a literal comma (,) in the comma separated\n\
+                        field list using a regex (-fr), you can use the pattern: \\x{2c}.\n\n\
+                        * -f1,'r\\x{2c}' will extract field 1 and any header field containing a comma (,)"
                 )
                 .action(ArgAction::Append)
                 .required(true),
