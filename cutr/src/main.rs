@@ -155,6 +155,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 ),
         )
         .arg(
+            Arg::new("sorted")
+                .short('s')
+                .action(clap::ArgAction::SetTrue)
+                .help("Output fields in index-sorted order"),
+        )
+        .arg(
             Arg::new("trim")
                 .short('t')
                 .action(clap::ArgAction::SetTrue)
@@ -273,10 +279,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         // generate indices into `line_fields` to extract
         let indices = field_types.iter().flat_map(|ft| ft.to_indices(max_index));
 
-        // collect the (unique)? set
+        // collect the (unique)? (sorted)? set
         let indices = match args.get_flag("uniq") {
-            true => indices.unique().collect::<Vec<_>>(),
-            false => indices.collect::<Vec<_>>(),
+            true => match args.get_flag("sorted") {
+                true => indices.unique().sorted().collect::<Vec<_>>(),
+                false => indices.unique().collect::<Vec<_>>(),
+            }
+            false => match args.get_flag("sorted") {
+                true => indices.sorted().collect::<Vec<_>>(),
+                false => indices.collect::<Vec<_>>(),
+            }
         };
 
         // output a line of joined fields
