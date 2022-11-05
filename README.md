@@ -1,6 +1,27 @@
 # Rust
 Rust Tools / Playground
 
+## cutr - Extract selected fields of each line of a file by index, range, or regular expression
+
+~~~
+Extract selected fields of each line of a file by index, range, or regular expression
+
+Usage: cutr [OPTIONS] -f <fields> [FILE]
+
+Arguments:
+  [FILE]  File to read, use '-' for standard input
+
+Options:
+  -f <fields>        Field number, range, or regex
+  -d <delim>         Input field separator character (defaults to whitespace)
+  -o <outdelim>      The output field separator [default: -d "delim" or '\t']
+  -u                 Output only unique fields
+  -s                 Output fields in index-sorted order
+  -t                 Trim whitespace on the output fields
+  -h, --help         Print help information (use `--help` for more detail)
+  -V, --version      Print version information
+~~~
+
 ## b64 - Base64 encoder/decoder
 
 ~~~
