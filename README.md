@@ -12,13 +12,15 @@ Arguments:
   [FILE]  File to read, use '-' for standard input
 
 Options:
-  -f <field_spec>      [-]number, range, or regex [--help for details]
-  -d <char>            Input field separator character. Defaults to whitespace
-  -o <str>             Use <str> as the output field separator. Default is to use -d, or '\t'
-  -u                   Output only unique fields
-  -s                   Output fields in index-sorted order
+  -f <field_spec>      [-]number, range, or regex (use `--help` for more detail)
+  -d <char>            Input field separator character, defaults to whitespace
   -T                   Short for -d'\t'
+  -o <str>             Use <str> as the output field separator, default is to use -d, or '\t'
+  -s                   Output fields in index-sorted order
+  -u                   Output only unique fields
   -t                   Trim whitespace in data parsing
+  -n                   Add a beginning field on output denoting the line number of the input
+  -c                   Output the compliment of fields
   -z                   Don't output empty lines
   -h, --help           Print help information (use `--help` for more detail)
   -V, --version        Print version information
