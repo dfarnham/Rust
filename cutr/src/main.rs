@@ -113,7 +113,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         -f N-M        # position range (increasing or decreasing)\n\
                         -f N-         # position open range to the end\n\
                         -f r/REGEX/   # regex match over fields on the \"file header\"\n\
-                        -f R/REGEX/   # regex match over fields on everyinput\n\
+                        -f R/REGEX/   # regex match over fields on all input\n\
                         -f <field_spec>[,<field_spec>,...]
                         \n\
                         Each <field_spec> is represented by one or more enumerations\n\
