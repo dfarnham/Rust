@@ -50,7 +50,8 @@ fn cap_to_index(cap: Match) -> Result<usize, Box<dyn Error>> {
 // "-f 3-" or "-f3-"    =>  FieldSpec::StartRange(3)
 // "-f 3-7" or "-f3-7"  =>  FieldSpec::ClosedRange(3, 7)
 // "-f-1"               =>  FieldSpec::Last(1)
-// "-fr." or "-f r.     =>  FieldSpec::Index(computed index on Regex header match)
+// "-fr." or "-f r.     =>  computed indices on Regex header matches into => List(FieldSpec::Index)
+// "-fR." or "-f R.     =>  FieldSpec::RegularExpression(re), computed indices on Regex data matches into => List(FieldSpec::Index)
 #[derive(Debug)]
 enum FieldSpec {
     Index(usize),
@@ -124,7 +125,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                         \tFieldSpec::RegularExpression(re)\n\
                         \n\
                         The combinded list of enumerations operate over the tokenized input\n\
-                        producing lists of indicies, the combination may contain repeated elements.\n\
+                        producing lists of indices, the combination may contain repeated elements.\n\
                         See option \"-u\" for applying a unique filter\n\
                         \n\
                         Examples\n\
@@ -179,8 +180,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .action(clap::ArgAction::SetTrue)
                 .help("Output only unique fields")
                 .long_help(
-                    "Example: -f 1,3,1,2,1-3 specifies indicies [1,3,1,2,1,2,3]\n\
-                    Using -u will yield indicies [1,3,2]",
+                    "Example: -f 1,3,1,2,1-3 specifies indices [1,3,1,2,1,2,3]\n\
+                    Using -u will yield indices [1,3,2]",
                 ),
         )
         .arg(
