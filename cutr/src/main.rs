@@ -27,7 +27,7 @@ where
     Ok(parsed_splits)
 }
 
-fn fields(text: &str, delim: Option<char>, trim: bool) -> Result<Vec<String>, Box<dyn Error>> {
+fn tokens(text: &str, delim: Option<char>, trim: bool) -> Result<Vec<String>, Box<dyn Error>> {
     match delim {
         Some(c) => split_on::<String>(text, c, trim),
         _ => Ok(text.split_whitespace().map(String::from).collect()),
@@ -45,36 +45,43 @@ fn cap_to_index(cap: Match) -> Result<usize, Box<dyn Error>> {
 // ==============================================================
 
 // Enum over the input -f arg types
-// "-f 1" or "-f1"      =>  FieldType::Index(1)
-// "-f 1,3" or "-f1,3"  =>  FieldType::Index(1), FieldType::Index(3)
-// "-f 3-" or "-f3-"    =>  FieldType::StartRange(3)
-// "-f 3-7" or "-f3-7"  =>  FieldType::ClosedRange(3, 7)
-// "-f-1"               =>  FieldType::Last(1)
-// "-fr." or "-f r.     =>  FieldType::Index(computed index on Regex header match)
+// "-f 1" or "-f1"      =>  FieldSpec::Index(1)
+// "-f 1,3" or "-f1,3"  =>  FieldSpec::Index(1), FieldSpec::Index(3)
+// "-f 3-" or "-f3-"    =>  FieldSpec::StartRange(3)
+// "-f 3-7" or "-f3-7"  =>  FieldSpec::ClosedRange(3, 7)
+// "-f-1"               =>  FieldSpec::Last(1)
+// "-fr." or "-f r.     =>  FieldSpec::Index(computed index on Regex header match)
 #[derive(Debug)]
-enum FieldType {
+enum FieldSpec {
     Index(usize),
     Last(usize),
     StartRange(usize),
     ClosedRange(usize, usize),
+    RegularExpression(Regex),
 }
-impl FieldType {
-    fn to_indices(&self, n: usize) -> Vec<usize> {
+impl FieldSpec {
+    fn indices(&self, tokens: &[String]) -> Vec<usize> {
         let indices = |start: usize, end: usize| -> Vec<usize> {
             (match start <= end {
                 true => (start..=end).collect::<Vec<_>>(),
                 false => (end..=start).rev().collect::<Vec<_>>(),
             })
             .into_iter()
-            .filter(|i| *i > 0 && *i <= n)
+            .filter(|i| *i > 0 && *i <= tokens.len())
             .map(|i| i - 1)
             .collect()
         };
         match self {
-            FieldType::Index(a) => indices(*a, *a),
-            FieldType::StartRange(a) => indices(*a, n),
-            FieldType::ClosedRange(a, b) => indices(*a, *b),
-            FieldType::Last(a) => indices(n + 1 - *a, n + 1 - *a),
+            FieldSpec::Index(a) => indices(*a, *a),
+            FieldSpec::StartRange(a) => indices(*a, tokens.len()),
+            FieldSpec::ClosedRange(a, b) => indices(*a, *b),
+            FieldSpec::Last(a) => indices(tokens.len() + 1 - *a, tokens.len() + 1 - *a),
+            FieldSpec::RegularExpression(re) => tokens
+                .iter()
+                .enumerate()
+                .filter(|(_, txt)| re.is_match(txt))
+                .flat_map(|(i, _)| indices(i + 1, i + 1))
+                .collect(),
         }
     }
 }
@@ -86,6 +93,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .version(crate_version!())
         .about(crate_description!())
         .color(ColorChoice::Auto)
+        .max_term_width(100)
         .arg(
             Arg::new("FILE")
                 .help("File to read, use '-' for standard input")
@@ -94,55 +102,76 @@ fn main() -> Result<(), Box<dyn Error>> {
         .arg(
             Arg::new("fields")
                 .short('f')
-                .help("Field number, range, or regex")
+                .value_name("field_spec")
+                .help("[-]number, range, or regex [--help for details]")
                 .long_help(
-                    "Field number, range, or regex.\n\
-                        Duplicate field numbers will result in duplicate outputs.\n\
-                        The output order is determined by the argument order.\n\
-                        See option \"-u\" for unique field output\n\n\
-                        -f N          # field position index starting at 1\n\
-                        -f-N          # field position index from the end\n\
-                        -f N-M        # field position range (increasing or decreasing)\n\
-                        -f N-         # field position open range to the end\n\
-                        -f rREGEX     # field matching regex on the \"file header\"\n\
-                        -f LIST (comma separated N,-N,N-M,rREGEX) or use multiple -f\n\n\
+                    "[-]number, range, or regex\n\
+                        \n\
+                        <field_spec> syntax:\n\
+                        -f N          # position index starting at 1\n\
+                        -f-N          # position index counting from the end\n\
+                        -f N-M        # position range (increasing or decreasing)\n\
+                        -f N-         # position open range to the end\n\
+                        -f r/REGEX/   # regex match over fields on the \"file header\"\n\
+                        -f R/REGEX/   # regex match over fields on everyinput\n\
+                        -f <field_spec>[,<field_spec>,...]
+                        \n\
+                        Each <field_spec> is represented by one or more enumerations\n\
+                        \tFieldSpec::Index(a)\n\
+                        \tFieldSpec::StartRange(a)\n\
+                        \tFieldSpec::ClosedRange(a, b)\n\
+                        \tFieldSpec::Last(a)\n\
+                        \tFieldSpec::RegularExpression(re)\n\
+                        \n\
+                        The combinded list of enumerations operate over the tokenized input\n\
+                        producing lists of indicies, the combination may contain repeated elements.\n\
+                        See option \"-u\" for applying a unique filter\n\
+                        \n\
+                        Examples\n\
                         * -f1,3       # [1,3]\n\
                         * -f1-3       # [1,2,3]\n\
                         * -f3-1       # [3,2,1]\n\
                         * -f1,1       # [1,1]\n\
-                        * -f-1        # last field\n\
-                        * -f-2        # second to last field\n\
-                        * -f'r^.{3}$' # field with exactly 3 characters\n\n\
-                        Indexing from the end (-f-N) requires no spaces between\n\
-                        the argument and parameter (example: use -f-2 not -f -2)\n\n\
-                        -f rREGEX will apply the REGEX to each field of the \"file header\"\n\
-                        after splitting on the -d <delim> to determine the index to output,\n\
-                        where \"file header\" is simply the first line of input\n\n\
-                        Note: In order to match a literal comma (,) in the comma separated\n\
-                        field list using a regex (-fr), you can use the pattern: \\x{2c}.\n\n\
-                        * -f1,'r\\x{2c}' will extract field 1 and any header field containing a comma (,)"
+                        * -f1 -f2     # [1,2]\n\
+                        * -f-1        # last index\n\
+                        * -f-2        # second to last index\n\
+                        * -f'r/^.{3}$/' # index of fields with exactly 3 characters in \"file header\"\n\
+                        * -f'R/^.{3}$/' # index of fields with exactly 3 characters (matched against all data)\n\
+                        \n\
+                        More Information\n\
+                        -f-N must be specified without spaces; use -f-2 not -f -2\n\
+                        \n\
+                        -fr, -fR, can optionally specifty the pattern between slashes (/) as -fr//, -fR//\n\
+                        \n\
+                        When using -f[rR] in a list, comma (,) is treated as a <field_spec> separator not a\n\
+                        component of the Regular Expression. Use a separate -f[rR] if comma is in the pattern\n\
+                        \n\
+                        Ex: select the first field, header fields beginning with \"foo\", and the last field\n\
+                        \t-f1,r^foo,-1\n\
+                        \t\tor\n\
+                        \t-f1 -fr/^foo/ -f-1",
                 )
+                .value_parser(clap::builder::NonEmptyStringValueParser::new())
                 .action(ArgAction::Append)
                 .required(true),
         )
         .arg(
             Arg::new("delim")
                 .short('d')
-                .help("Input field separator character (defaults to whitespace)")
+                .value_name("char")
+                .value_parser(clap::builder::NonEmptyStringValueParser::new())
+                .help("Input field separator character. Defaults to whitespace")
                 .long_help(
-                    "Use <delim> as the input field separator character \
-                        (defaults to whitespace). \nUse -d '\\t' for TAB",
+                    "Use <char> as the input field separator character, the default is whitespace \n\
+                    where consecutive spaces and tabs count as one single field separator.\n\n\
+                    Use -T or -d '\\t' for TAB",
                 ),
         )
         .arg(
             Arg::new("outdelim")
                 .short('o')
-                .help("The output field separator [default: -d \"delim\" or '\\t']")
-                .long_help(
-                    "Use <outdelim> as the output field separator.\n\
-                     If both input <delim> and <outdelim> are absent, <outdelim> will be '\\t'\n\n\
-                     If <outdelim> is absent and <delim> was supplied (see -d), <delim> will be used",
-                ),
+                .value_name("str")
+                .help("Use <str> as the output field separator. Default is to use -d, or '\\t'"),
         )
         .arg(
             Arg::new("uniq")
@@ -150,8 +179,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .action(clap::ArgAction::SetTrue)
                 .help("Output only unique fields")
                 .long_help(
-                    "Example: -f 1,3,2,1-3 generates indicies [1,3,2,1,2,3]\n\
-                    Using -u will generate indicies [1,3,2]",
+                    "Example: -f 1,3,1,2,1-3 specifies indicies [1,3,1,2,1,2,3]\n\
+                    Using -u will yield indicies [1,3,2]",
                 ),
         )
         .arg(
@@ -161,10 +190,23 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help("Output fields in index-sorted order"),
         )
         .arg(
+            Arg::new("tab")
+                .short('T')
+                .conflicts_with("delim")
+                .action(clap::ArgAction::SetTrue)
+                .help("Short for -d'\\t'"),
+        )
+        .arg(
             Arg::new("trim")
                 .short('t')
                 .action(clap::ArgAction::SetTrue)
-                .help("Trim whitespace on the output fields"),
+                .help("Trim whitespace in data parsing"),
+        )
+        .arg(
+            Arg::new("zero")
+                .short('z')
+                .action(clap::ArgAction::SetTrue)
+                .help("Don't output empty lines"),
         );
     let args = app.get_matches_from(env::args().collect::<Vec<String>>());
 
@@ -172,31 +214,47 @@ fn main() -> Result<(), Box<dyn Error>> {
     // ==============================================================
 
     // a capturing regex:
-    //   Label              -f Arg        Captured Text
+    //   Label             -f Arg         Captured Text
     //   ----------------------------------------------
-    //   {regex}        #  -frPattern  #  captures: "Pattern"
-    //   {start}-{end}  #  -f N-M      #  captures: "N" "M"
-    //   {start}-       #  -f N        #  captures: "N"
-    //   {last}         #  -f-N        #  captures: "N"
-    let farg_re = Regex::new(r"^(:?r(?P<regex>.+)|(?P<start>\d+)-(?P<end>\d+)?|-(?P<last>\d+))$")?;
+    //   {r_hdr}        |  -frPattern  |  "Pattern"
+    //   {r_all}        |  -fRPattern  |  "Pattern"
+    //   {start}-{end}  |  -f N-M      |  captures: "N" "M"
+    //   {start}-       |  -f N        |  captures: "N"
+    //   {last}         |  -f-N        |  captures: "N"
+    let farg_re = Regex::new(r"^(:?r(?P<r_hdr>.+)|R(?P<r_all>.+)|(?P<start>\d+)-(?P<end>\d+)?|-(?P<last>\d+))$")?;
 
-    // sub-split all -f args on ','
-    let fargs = args
-        .get_many::<String>("fields")
-        .expect("required")
-        .map(String::from)
-        .collect::<Vec<_>>()
-        .into_iter()
-        .flat_map(|f| fields(&f, Some(','), true).expect("wtf"));
+    // a capturing regex for [rR] expressions between slashes (/). e.g. -fr/foo/
+    //   Label        -f Arg                           Captured Text
+    //   -----------------------------------------------------------
+    //   {r_type}  |  -fr/Pattern/ or -fR/Pattern/  |  [rR]
+    //   {r_exp}   |  -fr/Pattern/ or -fR/Pattern/  |  "Pattern"
+    let farg_slash_re = Regex::new(r"^(?P<r_type>[rR])/(?P<r_exp>.+)/$")?;
 
-    // convert the input delimiter from Option<String> to Option<char>
+    // sub-split all non-regex -f args on comma (,)
+    let mut fargs = vec![];
+    for fstr in args.get_many::<String>("fields").expect("required") {
+        match farg_slash_re.captures(fstr) {
+            Some(capture) => {
+                fargs.push(capture["r_type"].to_owned() + &capture["r_exp"]);
+            }
+            _ => {
+                fargs.extend(fstr.split(',').map(String::from).collect::<Vec<_>>());
+            }
+        }
+    }
+
+    // set `delim` to Option<char>
     let delim = match args.get_one::<String>("delim") {
         Some(delim) if delim == "\\t" => Some('\t'),
         Some(delim) => delim.chars().next(),
-        _ => None,
+        // check option -T
+        _ => match args.get_flag("tab") {
+            true => Some('\t'),
+            false => None,
+        },
     };
 
-    // set `outdelim`
+    // set `outdelim` to String
     //   handle special inputs TAB, NL
     //   if `outdelim` was provided use it
     //   else if `delim` was provided set to `delim`, otherwise set to TAB
@@ -207,7 +265,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         // copy the input delimeter or set to a tab
         None => match delim {
             Some(delim) => delim.to_string(),
-            _ => "\t".to_string(),
+            _ => '\t'.to_string(),
         },
     };
 
@@ -219,87 +277,97 @@ fn main() -> Result<(), Box<dyn Error>> {
         .lines()
         .map(|line| line.expect("wtf"))
         .collect::<Vec<_>>(),
-        _ => io::stdin().lock().lines().map(|line| line.expect("wtf")).collect::<Vec<_>>(),
+        _ => io::stdin()
+            .lock()
+            .lines()
+            .map(|line| line.expect("wtf"))
+            .collect::<Vec<_>>(),
     };
+    let field_tokens = |n: usize| tokens(&lines[n], delim, args.get_flag("trim"));
 
-    // "file header" is simply the first line of input
-    // return on no input
+    // set `file_header` to the field tokens of the first line or return
     let file_header = match lines.is_empty() {
         true => return Ok(()),
-        false => fields(&lines[0], delim, args.get_flag("trim"))?,
+        false => field_tokens(0)?,
     };
 
-    // build a list of classified fields
-    //   FieldType::Index
-    //   FieldType::StartRange
-    //   FieldType::ClosedRange
-    let mut field_types = vec![];
+    // convert `fargs` to a list of field classifications (enums)
+    //   FieldSpec::Index
+    //   FieldSpec::StartRange
+    //   FieldSpec::ClosedRange
+    //   FieldSpec::RegularExpression
+    let mut field_enums = vec![];
     for s in fargs {
         match farg_re.captures(&s) {
             Some(capture) => {
-                // -f 'rPattern' => List of FieldType::Index
-                if let Some(regex) = capture.name("regex") {
+                // -f 'rPattern' => List of FieldSpec::Index
+                if let Some(regex) = capture.name("r_hdr") {
                     let re = Regex::new(regex.as_str())?;
-                    field_types.extend(
+                    field_enums.extend(
                         file_header
                             .iter()
                             .enumerate()
                             .filter(|(_, txt)| re.is_match(txt))
-                            .map(|(i, _)| FieldType::Index(i + 1))
+                            .map(|(i, _)| FieldSpec::Index(i + 1))
                             .collect::<Vec<_>>(),
                     );
-                // -f-N => FieldType::Last
+                // -f 'RPattern' => FieldSpec::RegularExpression
+                } else if let Some(regex) = capture.name("r_all") {
+                    let re = Regex::new(regex.as_str())?;
+                    field_enums.push(FieldSpec::RegularExpression(re));
+                // -f-N => FieldSpec::Last
                 } else if let Some(last) = capture.name("last") {
                     let last_index = cap_to_index(last)?;
-                    field_types.push(FieldType::Last(last_index));
-                // -f N-M => FieldType::ClosedRange
-                // -f N- => FieldType::StartRange
+                    field_enums.push(FieldSpec::Last(last_index));
+                // -f N-M => FieldSpec::ClosedRange
+                // -f N- => FieldSpec::StartRange
                 } else if let Some(start) = capture.name("start") {
                     let start_index = cap_to_index(start)?;
                     if let Some(end) = capture.name("end") {
                         let end_index = cap_to_index(end)?;
-                        field_types.push(FieldType::ClosedRange(start_index, end_index));
+                        field_enums.push(FieldSpec::ClosedRange(start_index, end_index));
                     } else {
-                        field_types.push(FieldType::StartRange(start_index));
+                        field_enums.push(FieldSpec::StartRange(start_index));
                     }
                 }
             }
-            // -f N => FieldType::Index or parse() Err
-            None => field_types.push(FieldType::Index(
+            // -f N => FieldSpec::Index or parse() Err
+            None => field_enums.push(FieldSpec::Index(
                 s.parse::<usize>().with_context(|| format!("-f {:?}", s))?,
             )),
         }
     }
 
     // process the input lines
-    for line in &lines {
-        let line_fields = fields(line, delim, args.get_flag("trim"))?;
-        let max_index = line_fields.len();
+    for i in 0..lines.len() {
+        let field_tokens = field_tokens(i)?;
 
-        // generate indices into `line_fields` to extract
-        let indices = field_types.iter().flat_map(|ft| ft.to_indices(max_index));
+        // generate indices into `field_tokens` to extract
+        let indices = field_enums.iter().flat_map(|f| f.indices(&field_tokens));
 
-        // collect the (unique)? (sorted)? set
+        // collect the (unique)? (sorted)? set of indices
         let indices = match args.get_flag("uniq") {
             true => match args.get_flag("sorted") {
                 true => indices.unique().sorted().collect::<Vec<_>>(),
                 false => indices.unique().collect::<Vec<_>>(),
-            }
+            },
             false => match args.get_flag("sorted") {
                 true => indices.sorted().collect::<Vec<_>>(),
                 false => indices.collect::<Vec<_>>(),
-            }
+            },
         };
 
         // output a line of joined fields
-        println!(
-            "{}",
-            indices
-                .into_iter()
-                .map(|i| line_fields[i].to_owned())
-                .collect::<Vec<_>>()
-                .join(&outdelim)
-        );
+        if !indices.is_empty() || !args.get_flag("zero") {
+            println!(
+                "{}",
+                indices
+                    .into_iter()
+                    .map(|i| field_tokens[i].to_owned())
+                    .collect::<Vec<_>>()
+                    .join(&outdelim)
+            );
+        }
     }
 
     Ok(())
