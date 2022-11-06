@@ -30,13 +30,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = app::get_args();
 
     // extract state switches, all default to false
-    let (tab, trim, uniq, sorted, number, zero) = (
-        args.get_flag("tab"),    // -T
-        args.get_flag("trim"),   // -t
-        args.get_flag("uniq"),   // -u
-        args.get_flag("sorted"), // -s
-        args.get_flag("number"), // -n
-        args.get_flag("zero"),   // -z
+    let (tab, trim, uniq, sorted, number, compliment, zero) = (
+        args.get_flag("tab"),        // -T
+        args.get_flag("trim"),       // -t
+        args.get_flag("uniq"),       // -u
+        args.get_flag("sorted"),     // -s
+        args.get_flag("number"),     // -n
+        args.get_flag("compliment"), // -c
+        args.get_flag("zero"),       // -z
     );
 
     // a capturing regex:
@@ -191,6 +192,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 true => indices.sorted().collect::<Vec<_>>(),
                 false => indices.collect::<Vec<_>>(),
             },
+        };
+
+        let indices = match compliment {
+            true => (0..line_tokens.len()).filter(|i| !indices.contains(i)).collect(),
+            false => indices,
         };
 
         // current line number + output_delim

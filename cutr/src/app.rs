@@ -127,6 +127,12 @@ pub fn get_args() -> ArgMatches {
                 .help("Add a beginning field on output denoting the line number of the input"),
         )
         .arg(
+            Arg::new("compliment")
+                .short('c')
+                .action(clap::ArgAction::SetTrue)
+                .help("Output the compliment of fields"),
+        )
+        .arg(
             Arg::new("zero")
                 .short('z')
                 .action(clap::ArgAction::SetTrue)
