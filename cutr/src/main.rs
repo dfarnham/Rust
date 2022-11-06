@@ -30,11 +30,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args = app::get_args();
 
     // extract state switches, all default to false
-    let (tab, trim, uniq, sorted, zero) = (
+    let (tab, trim, uniq, sorted, number, zero) = (
         args.get_flag("tab"),    // -T
         args.get_flag("trim"),   // -t
         args.get_flag("uniq"),   // -u
         args.get_flag("sorted"), // -s
+        args.get_flag("number"), // -n
         args.get_flag("zero"),   // -z
     );
 
@@ -78,7 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    // set `delim` to Option<char>
+    // set `input_delim` to Option<char>
     let input_delim = match args.get_one::<String>("input_delim") {
         Some(delim) if delim == "\\t" => Some('\t'),
         Some(delim) => delim.chars().next(),
@@ -91,8 +92,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // set `output_delim` to String
     //   handle special inputs representing TAB, NL
-    //   if `output_delim` was provided use it
-    //   else if `delim` was provided set to `delim`, otherwise set to TAB
+    //   Use <str> as the output field separator.
+    //   Default is to use -d, or '\t'
     let output_delim = match args.get_one::<String>("output_delim") {
         Some(o) if o == "\\t" => "\t".to_string(),
         Some(o) if o == "\\n" => "\n".to_string(),
@@ -192,10 +193,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             },
         };
 
+        // current line number + output_delim
+        let line_number = match number {
+            true => format!("{}{output_delim}", i + 1),
+            false => "".into(),
+        };
+
         // output a line of joined fields
         if !indices.is_empty() || !zero {
             println!(
-                "{}",
+                "{}{}",
+                line_number,
                 indices
                     .into_iter()
                     .map(|i| line_tokens[i].to_owned())

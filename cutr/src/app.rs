@@ -19,7 +19,7 @@ pub fn get_args() -> ArgMatches {
             Arg::new("fields")
                 .short('f')
                 .value_name("field_spec")
-                .help("[-]number, range, or regex [--help for details]")
+                .help("[-]number, range, or regex (use `--help` for more detail)")
                 .long_help(
                     "[-]number, range, or regex\n\
                         \n\
@@ -78,18 +78,31 @@ pub fn get_args() -> ArgMatches {
                 .short('d')
                 .value_name("char")
                 .value_parser(clap::builder::NonEmptyStringValueParser::new())
-                .help("Input field separator character. Defaults to whitespace")
+                .help("Input field separator character, defaults to whitespace")
                 .long_help(
                     "Use <char> as the input field separator character, the default is whitespace \n\
                     where consecutive spaces and tabs count as one single field separator.\n\n\
-                    Use -T or -d '\\t' for TAB",
+                    Use -T or -d'\\t' for TAB",
                 ),
+        )
+        .arg(
+            Arg::new("tab")
+                .short('T')
+                .conflicts_with("input_delim")
+                .action(clap::ArgAction::SetTrue)
+                .help("Short for -d'\\t'"),
         )
         .arg(
             Arg::new("output_delim")
                 .short('o')
                 .value_name("str")
-                .help("Use <str> as the output field separator. Default is to use -d, or '\\t'"),
+                .help("Use <str> as the output field separator, default is to use -d, or '\\t'"),
+        )
+        .arg(
+            Arg::new("sorted")
+                .short('s')
+                .action(clap::ArgAction::SetTrue)
+                .help("Output fields in index-sorted order"),
         )
         .arg(
             Arg::new("uniq")
@@ -102,23 +115,16 @@ pub fn get_args() -> ArgMatches {
                 ),
         )
         .arg(
-            Arg::new("sorted")
-                .short('s')
-                .action(clap::ArgAction::SetTrue)
-                .help("Output fields in index-sorted order"),
-        )
-        .arg(
-            Arg::new("tab")
-                .short('T')
-                .conflicts_with("input_delim")
-                .action(clap::ArgAction::SetTrue)
-                .help("Short for -d'\\t'"),
-        )
-        .arg(
             Arg::new("trim")
                 .short('t')
                 .action(clap::ArgAction::SetTrue)
                 .help("Trim whitespace in data parsing"),
+        )
+        .arg(
+            Arg::new("number")
+                .short('n')
+                .action(clap::ArgAction::SetTrue)
+                .help("Add a beginning field on output denoting the line number of the input"),
         )
         .arg(
             Arg::new("zero")
