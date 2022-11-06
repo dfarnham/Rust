@@ -10,4 +10,4 @@ edition = "2021"
 [dependencies]
 nom = "7.1"
 lazy_static = "1.4"
-regex = "1.5"
+regex = "1.7"
