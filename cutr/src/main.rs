@@ -3,7 +3,7 @@ use itertools::Itertools;
 use regex::{Match, Regex};
 use std::error::Error;
 use std::fs::File;
-use std::io::{self, BufRead};
+use std::io::{self, stdout, BufRead, Write};
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -28,6 +28,7 @@ fn captured_index(cap: Match) -> Result<usize, Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     // behave like a typical unix utility
     reset_sigpipe()?;
+    let mut stdout = stdout().lock();
 
     // parse command line arguments
     let args = app::get_args();
@@ -204,13 +205,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         // current line number + output_delim
         let line_number = match number {
-            true => format!("{}{output_delim}", i + 1),
+            true => (i + 1).to_string() + &output_delim,
             false => "".into(),
         };
 
         // output a line of joined fields
         if !indices.is_empty() || !zero {
-            println!(
+            writeln!(
+                stdout,
                 "{}{}",
                 line_number,
                 indices
@@ -218,7 +220,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     .map(|i| line_tokens[i].to_owned())
                     .collect::<Vec<_>>()
                     .join(&output_delim)
-            );
+            )?;
         }
     }
 
