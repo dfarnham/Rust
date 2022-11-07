@@ -27,3 +27,31 @@ pub fn tokens(text: &str, delim: Option<char>, trim: bool) -> Result<Vec<String>
         _ => Ok(text.split_whitespace().map(String::from).collect()),
     }
 }
+
+// ==============================================================
+
+/*
+// https://github.com/rust-lang/rust/issues/62569
+#[cfg(unix)]
+pub fn reset_sigpipe() -> Result<(), Box<dyn std::error::Error>> {
+    unsafe {
+        libc::signal(libc::SIGPIPE, libc::SIG_DFL);
+    }
+
+    Ok(())
+}
+*/
+
+// This should be called before calling any cli method or printing any output.
+pub fn reset_sigpipe() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(target_family = "unix")]
+    {
+        use nix::sys::signal;
+
+        unsafe {
+            signal::signal(signal::Signal::SIGPIPE, signal::SigHandler::SigDfl)?;
+        }
+    }
+
+    Ok(())
+}

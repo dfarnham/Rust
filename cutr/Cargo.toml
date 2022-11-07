@@ -8,8 +8,12 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[target.'cfg(target_family = "unix")'.dependencies]
+nix = "0.25"
+
 [dependencies]
 anyhow = "1.0"
 clap = { version = "4.0", features = ["cargo"] }
 itertools = "0.10"
+libc = "0.2.137"
 regex = "1.7"

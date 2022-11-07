@@ -10,7 +10,7 @@ use std::str::FromStr;
 mod app;
 
 mod utilities;
-use crate::utilities::tokens;
+use crate::utilities::{reset_sigpipe, tokens};
 
 mod field_spec;
 use crate::field_spec::FieldSpec;
@@ -26,6 +26,9 @@ fn captured_index(cap: Match) -> Result<usize, Box<dyn Error>> {
 // ==============================================================
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // behave like a typical unix utility
+    reset_sigpipe()?;
+
     // parse command line arguments
     let args = app::get_args();
 
