@@ -1,12 +1,10 @@
-use crate::FromStr;
-
 // splits and optionally trims the input String on a separator character
 // returns a Vec of parse::<T>() over the splits
 fn split_on<T>(text: &str, sep: char, trim: bool) -> Result<Vec<T>, Box<dyn std::error::Error>>
 where
-    T: FromStr,
-    <T as FromStr>::Err: std::error::Error,
-    <T as FromStr>::Err: 'static,
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::error::Error,
+    <T as std::str::FromStr>::Err: 'static,
 {
     let mut parsed_splits = vec![];
     for mut s in text.split(sep) {
@@ -30,8 +28,9 @@ pub fn tokens(text: &str, delim: Option<char>, trim: bool) -> Result<Vec<String>
 
 // ==============================================================
 
-/*
 // https://github.com/rust-lang/rust/issues/62569
+
+/*
 #[cfg(unix)]
 pub fn reset_sigpipe() -> Result<(), Box<dyn std::error::Error>> {
     unsafe {

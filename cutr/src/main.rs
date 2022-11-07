@@ -1,11 +1,8 @@
 use anyhow::{Context, Result};
 use itertools::Itertools;
 use regex::{Match, Regex};
-use std::error::Error;
 use std::fs::File;
-use std::io::{self, stdout, BufRead, Write};
-use std::path::PathBuf;
-use std::str::FromStr;
+use std::io::{self, BufRead, Write};
 
 mod app;
 
@@ -17,7 +14,7 @@ use crate::field_spec::FieldSpec;
 
 // ==============================================================
 // helper function to return the <usize> in a Regex captured match
-fn captured_index(cap: Match) -> Result<usize, Box<dyn Error>> {
+fn captured_index(cap: Match) -> Result<usize, Box<dyn std::error::Error>> {
     Ok(cap
         .as_str()
         .parse::<usize>()
@@ -25,10 +22,10 @@ fn captured_index(cap: Match) -> Result<usize, Box<dyn Error>> {
 }
 // ==============================================================
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // behave like a typical unix utility
     reset_sigpipe()?;
-    let mut stdout = stdout().lock();
+    let mut stdout = io::stdout().lock();
 
     // parse command line arguments
     let args = app::get_args();
@@ -43,25 +40,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         args.get_flag("compliment"), // -c
         args.get_flag("zero"),       // -z
     );
-
-    // a capturing regex:
-    //   Label             -f Arg         Captured Text
-    //   ----------------------------------------------
-    //   {r_hdr}        |  -frPattern  |  "Pattern"
-    //   {r_data}       |  -fRPattern  |  "Pattern"
-    //   {start}-{end}  |  -f N-M      |  captures: "N" "M"
-    //   {start}-       |  -f N        |  captures: "N"
-    //   {last}         |  -f-N        |  captures: "N"
-    //let farg_re = Regex::new(r"^(:?r(?P<r_hdr>.+)|R(?P<r_data>.+)|(?P<start>\d+)-(?P<end>\d+)?|-(?P<last>\d+))$")?;
-    let farg_re = Regex::new(
-        r"(?x)
-        ^(?:
-            r (?P<r_hdr>.+) |                 # header pattern
-            R (?P<r_data>.+) |                # data pattern
-            (?P<start>\d+) - (?P<end>\d+)? |  # ranges N-M or N-
-            -(?P<last>\d+)                    # last index -N
-        )$",
-    )?;
 
     // a capturing regex for [rR] expressions between slashes (/). e.g. -fr/foo/
     //   Label        -f Arg                           Captured Text
@@ -111,7 +89,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     // read input lines from a filename or stdin and collect into a Vec<String>
-    let lines = match args.get_one::<PathBuf>("FILE") {
+    let lines = match args.get_one::<std::path::PathBuf>("FILE") {
         Some(file) if file.as_os_str() != "-" => io::BufReader::new(
             File::open(file).with_context(|| format!("could not open file `{:?}`", file.as_os_str()))?,
         )
@@ -137,6 +115,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     //   FieldSpec::OpenRange
     //   FieldSpec::ClosedRange
     //   FieldSpec::RegularExpression
+    //
+    // a capturing regex
+    //   Label             -f Arg         Captured Text
+    //   ----------------------------------------------
+    //   {r_hdr}        |  -frPattern  |  "Pattern"
+    //   {r_data}       |  -fRPattern  |  "Pattern"
+    //   {start}-{end}  |  -f N-M      |  captures: "N" "M"
+    //   {start}-       |  -f N        |  captures: "N"
+    //   {last}         |  -f-N        |  captures: "N"
+    //let farg_re = Regex::new(r"^(:?r(?P<r_hdr>.+)|R(?P<r_data>.+)|(?P<start>\d+)-(?P<end>\d+)?|-(?P<last>\d+))$")?;
+    let farg_re = Regex::new(
+        r"(?x)
+        ^(?:
+            r (?P<r_hdr>.+) |                 # header pattern
+            R (?P<r_data>.+) |                # data pattern
+            (?P<start>\d+) - (?P<end>\d+)? |  # ranges N-M or N-
+            -(?P<last>\d+)                    # last index -N
+        )$",
+    )?;
+
     let mut field_enums = vec![];
     for s in fargs {
         match farg_re.captures(&s) {
@@ -179,7 +177,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    // process the input lines
+    // ==============================================================
+    // process input lines, output joined fields
     for i in 0..lines.len() {
         let line_tokens = line_tokens(i)?;
 
@@ -198,6 +197,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             },
         };
 
+        // compliment the set if indices?
         let indices = match compliment {
             true => (0..line_tokens.len()).filter(|i| !indices.contains(i)).collect(),
             false => indices,
