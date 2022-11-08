@@ -1,14 +1,19 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::*;
+use general::reset_sigpipe;
 use sha1::{Digest, Sha1};
 use sha2::Sha256;
 use sha2::Sha512;
 use std::error::Error;
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // behave like a typical unix utility
+    reset_sigpipe()?;
+    let mut stdout = io::stdout().lock();
+
     #[derive(Parser, Debug)]
     #[clap(author, version, about, long_about=None)]
     struct Args {
@@ -72,14 +77,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         };
 
         for (i, c) in digest.chars().enumerate() {
-            print!("{}", c.to_string().green());
+            write!(stdout, "{}", c.to_string().green())?;
             //print!("{c}");
             if (i + 1) % n == 0 {
-                print!(" ");
+                write!(stdout, " ")?;
             }
         }
         //println!("\t{input_name}");
-        println!("\t{}", input_name.yellow().bold());
+        writeln!(stdout, "\t{}", input_name.yellow().bold())?;
     }
     Ok(())
 }

@@ -1,0 +1,16 @@
+[workspace]
+
+members = [
+    # binaries
+    "b64",
+    "cutr",
+    "kennard-stone",
+    "nom_word_boundary",
+    "num",
+    "sha",
+    "utf8char",
+    "uuid",
+
+    # libraries
+    "general",
+]

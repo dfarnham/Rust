@@ -1,6 +1,22 @@
+use std::fs::File;
+use std::io::{self, BufRead};
+
+// https://doc.rust-lang.org/stable/rust-by-example/std_misc/file/read_lines.html
+//
+// The output is wrapped in a Result to allow matching on errors
+// Returns an Iterator to the Reader of the lines of the file.
+#[allow(dead_code)]
+pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+where
+    P: AsRef<std::path::Path>,
+{
+    let file = std::fs::File::open(filename)?;
+    Ok(io::BufReader::new(file).lines())
+}
+
 // splits and optionally trims the input String on a separator character
 // returns a Vec of parse::<T>() over the splits
-fn split_on<T>(text: &str, sep: char, trim: bool) -> Result<Vec<T>, Box<dyn std::error::Error>>
+pub fn split_on<T>(text: &str, sep: char, trim: bool) -> Result<Vec<T>, Box<dyn std::error::Error>>
 where
     T: std::str::FromStr,
     <T as std::str::FromStr>::Err: std::error::Error,
@@ -18,16 +34,6 @@ where
 
 // ==============================================================
 
-// return a list of String tokens
-pub fn tokens(text: &str, delim: Option<char>, trim: bool) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    match delim {
-        Some(c) => split_on::<String>(text, c, trim),
-        _ => Ok(text.split_whitespace().map(String::from).collect()),
-    }
-}
-
-// ==============================================================
-
 // https://github.com/rust-lang/rust/issues/62569
 
 /*
@@ -41,7 +47,7 @@ pub fn reset_sigpipe() -> Result<(), Box<dyn std::error::Error>> {
 }
 */
 
-// This should be called before calling any cli method or printing any output.
+// This should be called in cli apps
 pub fn reset_sigpipe() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_family = "unix")]
     {

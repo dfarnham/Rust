@@ -1,8 +1,14 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::*;
+use general::reset_sigpipe;
+use std::io::{self, Write};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // behave like a typical unix utility
+    reset_sigpipe()?;
+    let mut stdout = io::stdout().lock();
+
     #[derive(Parser, Debug)]
     #[clap(author, version, about, long_about=None)]
     struct Args {
@@ -173,7 +179,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_context(|| format!("std::str::from_utf8 failed converting bytes '{bytes:?}'"))?;
 
     #[rustfmt::skip]
-    println!(
+    writeln!(stdout,
         "{} {}\t{} {}\t{} {}\t{}{}{} {}\t{} {}\t{} {}\t{} {}",
         "(Dec)".yellow().bold(),  n.to_string().green().bold(),
         "(Oct)".yellow().bold(),  n_oct.green().bold(),
@@ -182,7 +188,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "(UTF-8)".yellow().bold(),  n_utf8.green().bold(),
         "(UTF-16)".yellow().bold(),  n_utf16.green().bold(),
         "(UTF-8 Char)".yellow().bold(),  n_char.green().bold(),
-    );
+    )?;
 
     Ok(())
 }

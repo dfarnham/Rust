@@ -10,4 +10,5 @@ edition = "2021"
 [dependencies]
 anyhow = "1"
 clap = { version = "3", features = ["derive"] }
+general = { path = "../general" }
 uuid = { version = "1.2", features = ["v4", "v5"] }

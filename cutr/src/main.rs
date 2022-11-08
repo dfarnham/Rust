@@ -1,14 +1,14 @@
 use anyhow::{Context, Result};
+use general::{reset_sigpipe, split_on};
 use itertools::Itertools;
 use regex::{Match, Regex};
 use std::fs::File;
 use std::io::{self, BufRead, Write};
 
-mod app;
+// clap arg parser
+mod argparse;
 
-mod utilities;
-use crate::utilities::{reset_sigpipe, tokens};
-
+// FieldSpec Enum
 mod field_spec;
 use crate::field_spec::FieldSpec;
 
@@ -22,13 +22,21 @@ fn captured_index(cap: Match) -> Result<usize, Box<dyn std::error::Error>> {
 }
 // ==============================================================
 
+// return a list of String tokens
+pub fn tokens(text: &str, delim: Option<char>, trim: bool) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+    match delim {
+        Some(c) => split_on::<String>(text, c, trim),
+        _ => Ok(text.split_whitespace().map(String::from).collect()),
+    }
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // behave like a typical unix utility
     reset_sigpipe()?;
     let mut stdout = io::stdout().lock();
 
     // parse command line arguments
-    let args = app::get_args();
+    let args = argparse::get_args();
 
     // extract state switches, all default to false
     let (tab, trim, uniq, sorted, number, compliment, zero) = (

@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use general::reset_sigpipe;
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, Read, Write};
@@ -135,6 +136,10 @@ fn b64_decode(src: [u8; 4], dst: &mut [u8; 3]) -> usize {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // behave like a typical unix utility
+    reset_sigpipe()?;
+    let mut stdout = io::stdout().lock();
+
     #[derive(Parser, Debug)]
     #[clap(author, version, about, long_about=None)]
     struct Args {
@@ -212,7 +217,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if args.pretty {
                     pretty_counter += 1;
                     if pretty_counter % 19 == 0 {
-                        io::stdout().write_all(b"\n")?;
+                        writeln!(stdout)?;
                     }
                 }
                 n = 0;
@@ -222,7 +227,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             b64_encode(src, &mut dst, n);
             io::stdout().write_all(&dst)?
         }
-        io::stdout().write_all(b"\n")?;
+        writeln!(stdout)?;
     }
 
     Ok(())

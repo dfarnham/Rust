@@ -11,7 +11,7 @@ use std::error::Error;
 #[macro_use]
 extern crate lazy_static;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 // a Token<'a> of type B or T (Boundary or Token)
 // each Token holds a reference into an input string
 pub enum Token<'a> {
@@ -46,7 +46,7 @@ impl<'a> Token<'a> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WordBoundaryTokenizer {
     // chars in "excluded_boundary_chars" that would typically return true on Regex \b that will now return false
     excluded_boundary_chars: String,

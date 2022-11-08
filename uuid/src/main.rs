@@ -1,11 +1,16 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use general::reset_sigpipe;
 use std::error::Error;
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 use uuid::Uuid;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // behave like a typical unix utility
+    reset_sigpipe()?;
+    let mut stdout = io::stdout().lock();
+
     #[derive(Parser, Debug)]
     #[clap(author, version, about, long_about=None)]
     struct Args {
@@ -33,8 +38,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // option -4 -- output a version 4 random uuid and exit
     if args.v4 {
         match args.quiet {
-            true => println!("{}", Uuid::new_v4()),
-            false => println!("uuid4:\t{}", Uuid::new_v4()),
+            true => writeln!(stdout, "{}", Uuid::new_v4())?,
+            false => writeln!(stdout, "uuid4:\t{}", Uuid::new_v4())?,
         }
         return Ok(());
     }
@@ -60,8 +65,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // compute a version 5 uuid using namespace OID on the input
     let uuid5 = Uuid::new_v5(&Uuid::NAMESPACE_OID, &buffer);
     match args.quiet {
-        true => println!("{uuid5}"),
-        false => println!("uuid5 ({input_name}) = {uuid5}"),
+        true => writeln!(stdout, "{uuid5}")?,
+        false => writeln!(stdout, "uuid5 ({input_name}) = {uuid5}")?,
     }
 
     Ok(())

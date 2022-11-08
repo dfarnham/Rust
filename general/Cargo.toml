@@ -1,12 +1,11 @@
 [package]
-description = "UTF-8 Character Display"
-name = "utf8char"
+name = "general"
 version = "0.1.0"
-authors = ["Dave Farnham <dave.farnham@icloud.com>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[target.'cfg(target_family = "unix")'.dependencies]
+nix = "0.25"
+
 [dependencies]
-anyhow = "1"
-getopts = "0.2"

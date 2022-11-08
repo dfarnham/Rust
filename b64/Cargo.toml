@@ -10,3 +10,4 @@ edition = "2021"
 [dependencies]
 anyhow = "1"
 clap = { version = "3", features = ["derive"] }
+general = { path = "../general" }
