@@ -1,6 +1,20 @@
 # Rust
 Rust Tools / Playground
 
+## Build/Install
+
+~~~
+Build everything
+$ cargo build --bins -r
+
+Lint check everything
+$ cargo clippy
+
+Install a tool to ~/.cargo/bin
+$ cd <tool>
+$ cargo install --path .
+~~~
+
 ## cutr - Extract selected fields of each line of a file by index, range, or regular expression
 
 ~~~
