@@ -1,7 +1,7 @@
 //***********************************************
 //             SplitStr Tokenizer
 //***********************************************
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SplitStrTokenizer {
     split_pattern: String,
 }

@@ -1,7 +1,7 @@
 use crate::TokenizerType;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct TokenizationSpec {
     pub tokenizer_type: TokenizerType,
     pub tokenizer_init_param: Option<String>,
