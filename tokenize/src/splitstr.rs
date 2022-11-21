@@ -1,12 +1,16 @@
 //***********************************************
 //             SplitStr Tokenizer
 //***********************************************
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct SplitStrTokenizer {
     split_pattern: String,
 }
 
 impl SplitStrTokenizer {
+    pub fn default() -> Self {
+        Self::new(None)
+    }
+
     pub fn new(split_pattern: Option<String>) -> Self {
         Self {
             split_pattern: split_pattern.unwrap_or_else(|| "".into()),
