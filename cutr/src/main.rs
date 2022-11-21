@@ -1,9 +1,9 @@
 use anyhow::{Context, Result};
-use general::{reset_sigpipe, split_on};
 use itertools::Itertools;
 use regex::{Match, Regex};
 use std::fs::File;
 use std::io::{self, BufRead, Write};
+use tokenize::{error::TokenizeError, tokenizer_from_spec, TokenizationSpec, TokenizerType};
 
 // clap arg parser
 mod argparse;
@@ -22,17 +22,9 @@ fn captured_index(cap: Match) -> Result<usize, Box<dyn std::error::Error>> {
 }
 // ==============================================================
 
-// return a list of String tokens
-pub fn tokens(text: &str, delim: Option<char>, trim: bool) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    match delim {
-        Some(c) => split_on::<String>(text, c, trim),
-        _ => Ok(text.split_whitespace().map(String::from).collect()),
-    }
-}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // behave like a typical unix utility
-    reset_sigpipe()?;
+    general::reset_sigpipe()?;
     let mut stdout = io::stdout().lock();
 
     // parse command line arguments
@@ -70,13 +62,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // set `input_delim` to Option<char>
+    // set `input_delim` to Option<String>
     let input_delim = match args.get_one::<String>("input_delim") {
-        Some(delim) if delim == "\\t" => Some('\t'),
-        Some(delim) => delim.chars().next(),
+        Some(delim) if delim == "\\t" => Some('\t'.to_string()),
+        Some(delim) => Some(delim).cloned(),
         // check option -T
         _ => match tab {
-            true => Some('\t'),
+            true => Some('\t'.to_string()),
             false => None,
         },
     };
@@ -91,10 +83,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(o) => o.to_string(),
         // copy the input delimeter or set to a tab
         None => match input_delim {
-            Some(d) => d.to_string(),
+            Some(ref d) => d.to_string(),
             _ => '\t'.to_string(),
         },
     };
+
+    // build a TokenizerSpec from arg inputs
+    let mut tokenizer_spec = TokenizationSpec::default();
+    tokenizer_spec.trimmed_tokens = trim;
+    if input_delim.is_some() {
+        tokenizer_spec.tokenizer_type = TokenizerType::SplitStr;
+        tokenizer_spec.tokenizer_init_param = input_delim;
+    }
+
+    // Build a tokenizer from a TokenizationSpec
+    let tokenizer =
+        tokenizer_from_spec(&tokenizer_spec).map_err(|e| TokenizeError::AcquireTokerError(e.to_string()))?;
 
     // read input lines from a filename or stdin and collect into a Vec<String>
     let lines = match args.get_one::<std::path::PathBuf>("FILE") {
@@ -110,12 +114,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .map(|line| line.expect("wtf"))
             .collect::<Vec<_>>(),
     };
-    let line_tokens = |n: usize| tokens(&lines[n], input_delim, trim);
+    let tokens_per_line = |n: usize| tokenizer.tokens(&lines[n]);
 
     // set `file_header` to the field tokens of the first line or return
     let file_header = match lines.is_empty() {
         true => return Ok(()),
-        false => line_tokens(0)?,
+        false => tokens_per_line(0),
     };
 
     // convert `fargs` to a list of field classifications (enums)
@@ -188,7 +192,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // ==============================================================
     // process input lines, output joined fields
     for i in 0..lines.len() {
-        let line_tokens = line_tokens(i)?;
+        let line_tokens = tokens_per_line(i);
 
         // generate indices into `line_tokens` to extract
         let indices = field_enums.iter().flat_map(|f| f.indices(&line_tokens));

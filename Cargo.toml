@@ -8,9 +8,11 @@ members = [
     "nom_word_boundary",
     "num",
     "sha",
+    "tok",
     "utf8char",
     "uuid",
 
     # libraries
     "general",
+    "tokenize",
 ]
