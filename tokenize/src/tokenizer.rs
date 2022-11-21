@@ -12,6 +12,7 @@ use crate::WordTokens;
 //    3. whitespace trim tokens (true/false)
 //    4. discard tokens matching a RE
 //================================================
+#[derive(Clone, Debug)]
 pub enum Tokenizer {
     Spec(TokenizationConfig, WordTokenizer),
 }

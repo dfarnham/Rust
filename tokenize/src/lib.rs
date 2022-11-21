@@ -34,7 +34,7 @@ pub enum TokenizerType {
 // A Tokenizer holds a TokenizationConfig which is
 // built from fields in the TokenizationSpec
 //================================================
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct TokenizationConfig {
     downcase_text: bool,
     trimmed_tokens: bool,
@@ -78,7 +78,9 @@ pub fn tokenizer_from_spec(spec: &TokenizationSpec) -> Result<Tokenizer, Tokeniz
 trait WordTokens {
     fn words(&self, text: &str) -> Vec<String>;
 }
+
 #[enum_delegate::implement(WordTokens)]
+#[derive(Clone, Debug)]
 pub enum WordTokenizer {
     SplitStr(SplitStrTokenizer),
     UnicodeSegment(UnicodeSegmentTokenizer),
@@ -107,7 +109,7 @@ impl WordTokens for SplitStrTokenizer {
 //           Unicode Segment Tokenizer
 //         TokenizerType::UnicodeSegment
 //================================================
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct UnicodeSegmentTokenizer;
 impl WordTokens for UnicodeSegmentTokenizer {
     fn words(&self, text: &str) -> Vec<String> {
@@ -119,7 +121,7 @@ impl WordTokens for UnicodeSegmentTokenizer {
 //            Unicode Word Tokenizer
 //          TokenizerType::UnicodeWord
 //================================================
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct UnicodeWordTokenizer;
 impl WordTokens for UnicodeWordTokenizer {
     fn words(&self, text: &str) -> Vec<String> {
@@ -131,7 +133,7 @@ impl WordTokens for UnicodeWordTokenizer {
 //             Whitespace Tokenizer
 //           TokenizerType::Whitespace
 //================================================
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct WhitespaceTokenizer;
 impl WordTokens for WhitespaceTokenizer {
     fn words(&self, text: &str) -> Vec<String> {
