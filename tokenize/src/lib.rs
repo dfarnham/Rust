@@ -153,3 +153,23 @@ impl WordTokens for WordBoundaryTokenizer {
         self.words(text)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn is_normal<T: Clone + Sized + Send + Sync + Unpin>() {}
+
+    #[test]
+    fn normal_types() {
+        is_normal::<TokenizerType>();
+        is_normal::<TokenizationConfig>();
+        is_normal::<WordTokenizer>();
+        is_normal::<SplitStrTokenizer>();
+        is_normal::<UnicodeSegmentTokenizer>();
+        is_normal::<UnicodeWordTokenizer>();
+        is_normal::<WhitespaceTokenizer>();
+        is_normal::<WordBoundaryTokenizer>();
+        is_normal::<Tokenizer>()
+    }
+}
