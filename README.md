@@ -41,7 +41,7 @@ pub struct TokenizationSpec {
 //    1. downcase the text (true/false)
 //    2. apply WordTokenizer(TokenizerType) to text
 //    3. whitespace trim tokens (true/false)
-//    4. discard tokens matching a RE
+//    4. discard tokens matching a Regular Expression
 
 ~~~
 
