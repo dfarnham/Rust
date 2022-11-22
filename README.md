@@ -15,6 +15,36 @@ $ cd <tool>
 $ cargo install --path .
 ~~~
 
+## tokenize - Library to acquire/configure text tokenizers given a specification
+
+~~~
+This library takes as input a TokenizationSpec and returns a configured Tokenizer.
+
+Tokenizer.tokens(&str) -> Vec<String>
+
+The TokenizerType is one of:
+	1. SplitStr
+	2. UnicodeSegment
+	3. UnicodeWord
+	4. Whitespace
+	5. WordBoundary
+
+pub struct TokenizationSpec {
+    pub tokenizer_type: TokenizerType,
+    pub tokenizer_init_param: Option<String>,
+    pub downcase_text: bool,
+    pub trimmed_tokens: bool,
+    pub filter_tokens_re: Option<String>,
+}
+
+// text to tokens recipe:
+//    1. downcase the text (true/false)
+//    2. apply WordTokenizer(TokenizerType) to text
+//    3. whitespace trim tokens (true/false)
+//    4. discard tokens matching a RE
+
+~~~
+
 ## cutr - Extract selected fields of each line of a file by index, range, or regular expression
 
 ~~~
