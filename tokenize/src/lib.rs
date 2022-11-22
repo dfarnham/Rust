@@ -76,7 +76,10 @@ pub fn tokenizer_from_spec(spec: &TokenizationSpec) -> Result<Tokenizer, Tokeniz
 //================================================
 #[enum_delegate::register]
 trait WordTokens {
-    fn words(&self, text: &str) -> Vec<String>;
+    // default implementation is Whitespace
+    fn words(&self, text: &str) -> Vec<String> {
+        text.split_whitespace().map(String::from).collect()
+    }
 }
 
 #[enum_delegate::implement(WordTokens)]
@@ -136,9 +139,7 @@ impl WordTokens for UnicodeWordTokenizer {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct WhitespaceTokenizer;
 impl WordTokens for WhitespaceTokenizer {
-    fn words(&self, text: &str) -> Vec<String> {
-        text.split_whitespace().map(String::from).collect()
-    }
+    /* default trait implementation */
 }
 
 //================================================
