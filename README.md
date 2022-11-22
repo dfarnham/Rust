@@ -57,7 +57,7 @@ impl TokenizationSpec {
 
 Example: Tokenizing and discarding tokens containing only punctuation
 
-use tokenize::{tokenizer\_from\_spec, TokenizationSpec, TokenizerType};
+use tokenize::{tokenizer_from_spec, TokenizationSpec, TokenizerType};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let text = "Don't discard (this,that) but these: &!%, * &?.";
 
