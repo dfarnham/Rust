@@ -36,6 +36,17 @@ pub struct TokenizationSpec {
     pub trimmed_tokens: bool,
     pub filter_tokens_re: Option<String>,
 }
+impl TokenizationSpec {
+    pub fn default() -> Self {
+        Self {
+            tokenizer_type: TokenizerType::Whitespace,
+            tokenizer_init_param: None,
+            downcase_text: false,
+            trimmed_tokens: false,
+            filter_tokens_re: None,
+        }
+    }
+}
 
 // text to tokens recipe:
 //    1. downcase the text (true/false)
@@ -43,6 +54,33 @@ pub struct TokenizationSpec {
 //    3. whitespace trim tokens (true/false)
 //    4. discard tokens matching a Regular Expression
 
+
+Example: Tokenizing and discarding punctuation
+
+use tokenize::{tokenizer_from_spec, TokenizationSpec, TokenizerType};
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let text = "Don't discard (this,that) but these: &!%, * &?.";
+
+    let mut tokenizer_spec = TokenizationSpec::default();
+    tokenizer_spec.filter_tokens_re = Some(r"^\p{P}+$".into());
+    
+    let tokenizer = tokenizer_from_spec(&tokenizer_spec)?;
+    println!("{:?} tokens = {:?}", tokenizer_spec.tokenizer_type, tokenizer.tokens(text));
+
+    tokenizer_spec.tokenizer_type = TokenizerType::UnicodeSegment;
+    let tokenizer = tokenizer_from_spec(&tokenizer_spec)?;
+    println!("{:?} tokens = {:?}", tokenizer_spec.tokenizer_type, tokenizer.tokens(text));
+
+    tokenizer_spec.tokenizer_type = TokenizerType::UnicodeWord;
+    let tokenizer = tokenizer_from_spec(&tokenizer_spec)?;
+    println!("{:?} tokens = {:?}", tokenizer_spec.tokenizer_type, tokenizer.tokens(text));
+
+    Ok(())
+}
+
+Whitespace tokens = ["Don't", "discard", "(this,that)", "but", "these:"]
+UnicodeSegment tokens = ["Don't", " ", "discard", " ", "this", "that", " ", "but", " ", "these", " ", " ", " "]
+UnicodeWord tokens = ["Don't", "discard", "this", "that", "but", "these"]
 ~~~
 
 ## cutr - Extract selected fields of each line of a file by index, range, or regular expression
