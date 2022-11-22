@@ -55,13 +55,15 @@ impl TokenizationSpec {
 //    4. discard tokens matching a Regular Expression
 
 
-Example: Tokenizing and discarding punctuation
+Example: Tokenizing and discarding tokens containing only punctuation
 
-use tokenize::{tokenizer_from_spec, TokenizationSpec, TokenizerType};
+use tokenize::{tokenizer\_from\_spec, TokenizationSpec, TokenizerType};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let text = "Don't discard (this,that) but these: &!%, * &?.";
 
     let mut tokenizer_spec = TokenizationSpec::default();
+
+    // Regex which matches Punctuation
     tokenizer_spec.filter_tokens_re = Some(r"^\p{P}+$".into());
     
     let tokenizer = tokenizer_from_spec(&tokenizer_spec)?;
