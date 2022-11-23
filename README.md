@@ -18,6 +18,10 @@ $ cargo install --path .
 ## tokenize - Library to acquire/configure text tokenizers given a specification
 
 ~~~
+Status: Basic word tokenizers complete
+A development registry for Toolkit/tools logically operating over .tokens()
+cutr uses it for field indexing.
+
 This library takes as input a TokenizationSpec and returns a configured Tokenizer.
 
 The TokenizationSpec instructs text transformations and token filtering rules.
