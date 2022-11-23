@@ -20,14 +20,23 @@ $ cargo install --path .
 ~~~
 This library takes as input a TokenizationSpec and returns a configured Tokenizer.
 
+The TokenizationSpec instructs text transformations and token filtering rules.
+
+The "text" to tokens[] recipe:
+	1. downcase the input text (true/false)
+	2. apply WordTokenizer(TokenizerType) to text
+	3. whitespace trim() tokens (true/false)
+	4. discard tokens matching a Regular Expression
+
 Tokenizer.tokens(&str) -> Vec<String>
 
 The TokenizerType is one of:
-	1. SplitStr
-	2. UnicodeSegment
-	3. UnicodeWord
-	4. Whitespace
-	5. WordBoundary
+	* SplitStr (Option<String>) -- String to split on
+	* UnicodeSegment
+	* UnicodeWord
+	* Whitespace
+	* WordBoundary (Option<String>) -- String containing additional boundary chars
+		that a \b assertion would assert as false. e.g. "-'"
 
 pub struct TokenizationSpec {
     pub tokenizer_type: TokenizerType,
@@ -48,41 +57,36 @@ impl TokenizationSpec {
     }
 }
 
-// text to tokens recipe:
-//    1. downcase the text (true/false)
-//    2. apply WordTokenizer(TokenizerType) to text
-//    3. whitespace trim tokens (true/false)
-//    4. discard tokens matching a Regular Expression
-
-
-Example: Tokenizing and discarding tokens containing only punctuation
-
 use tokenize::{tokenizer_from_spec, TokenizationSpec, TokenizerType};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let text = "Don't discard (this,that) but these: &!%, * &?.";
+    let utf8str = "\u{201F}THE-BIG-RIPOFF\u{201D} Mr\u{FE52} & Mrs\u{2024} John B. Smith, cheapsite.com, 1.5 million, i\u{FF0E}e\u{2024}, 🍺+🍕, na\u{00EF}ve, stressed vowels: \u{00E9}, \u{00ED}, \u{00F3}, \u{00FA}, \u{2026}";
 
+    println!("utf8str = {utf8str}\n");
+
+    // Whitespace (default)
     let mut tokenizer_spec = TokenizationSpec::default();
 
-    // Regex which matches Punctuation
-    tokenizer_spec.filter_tokens_re = Some(r"^\p{P}+$".into());
-    
-    let tokenizer = tokenizer_from_spec(&tokenizer_spec)?;
-    println!("{:?} tokens = {:?}", tokenizer_spec.tokenizer_type, tokenizer.tokens(text));
-
-    tokenizer_spec.tokenizer_type = TokenizerType::UnicodeSegment;
-    let tokenizer = tokenizer_from_spec(&tokenizer_spec)?;
-    println!("{:?} tokens = {:?}", tokenizer_spec.tokenizer_type, tokenizer.tokens(text));
-
-    tokenizer_spec.tokenizer_type = TokenizerType::UnicodeWord;
-    let tokenizer = tokenizer_from_spec(&tokenizer_spec)?;
-    println!("{:?} tokens = {:?}", tokenizer_spec.tokenizer_type, tokenizer.tokens(text));
+    for toker in [TokenizerType::Whitespace, TokenizerType::SplitStr, TokenizerType::UnicodeSegment,
+                  TokenizerType::UnicodeWord, TokenizerType::WordBoundary] {
+        tokenizer_spec.tokenizer_type = toker;
+        let tokenizer = tokenizer_from_spec(&tokenizer_spec)?;
+        println!("{:?}:\t{:?}\n", tokenizer_spec.tokenizer_type, tokenizer.tokens(utf8str));
+    }
 
     Ok(())
 }
 
-Whitespace tokens = ["Don't", "discard", "(this,that)", "but", "these:"]
-UnicodeSegment tokens = ["Don't", " ", "discard", " ", "this", "that", " ", "but", " ", "these", " ", " ", " "]
-UnicodeWord tokens = ["Don't", "discard", "this", "that", "but", "these"]
+utf8str = ‟THE-BIG-RIPOFF” Mr﹒ & Mrs․ John B. Smith, cheapsite.com, 1.5 million, i．e․, 🍺+🍕, naïve, stressed vowels: é, í, ó, ú, …
+
+Whitespace:	["‟THE-BIG-RIPOFF”", "Mr﹒", "&", "Mrs․", "John", "B.", "Smith,", "cheapsite.com,", "1.5", "million,", "i．e․,", "🍺+🍕,", "naïve,", "stressed", "vowels:", "é,", "í,", "ó,", "ú,", "…"]
+
+SplitStr:	["", "‟", "T", "H", "E", "-", "B", "I", "G", "-", "R", "I", "P", "O", "F", "F", "”", " ", "M", "r", "﹒", " ", "&", " ", "M", "r", "s", "․", " ", "J", "o", "h", "n", " ", "B", ".", " ", "S", "m", "i", "t", "h", ",", " ", "c", "h", "e", "a", "p", "s", "i", "t", "e", ".", "c", "o", "m", ",", " ", "1", ".", "5", " ", "m", "i", "l", "l", "i", "o", "n", ",", " ", "i", "．", "e", "․", ",", " ", "🍺", "+", "🍕", ",", " ", "n", "a", "ï", "v", "e", ",", " ", "s", "t", "r", "e", "s", "s", "e", "d", " ", "v", "o", "w", "e", "l", "s", ":", " ", "é", ",", " ", "í", ",", " ", "ó", ",", " ", "ú", ",", " ", "…", ""]
+
+UnicodeSegment:	["‟", "THE", "-", "BIG", "-", "RIPOFF", "”", " ", "Mr", "﹒", " ", "&", " ", "Mrs", "․", " ", "John", " ", "B", ".", " ", "Smith", ",", " ", "cheapsite.com", ",", " ", "1.5", " ", "million", ",", " ", "i．e", "․", ",", " ", "🍺", "+", "🍕", ",", " ", "naïve", ",", " ", "stressed", " ", "vowels", ":", " ", "é", ",", " ", "í", ",", " ", "ó", ",", " ", "ú", ",", " ", "…"]
+
+UnicodeWord:	["THE", "BIG", "RIPOFF", "Mr", "Mrs", "John", "B", "Smith", "cheapsite.com", "1.5", "million", "i．e", "naïve", "stressed", "vowels", "é", "í", "ó", "ú"]
+
+WordBoundary:	["THE", "BIG", "RIPOFF", "Mr", "Mrs", "John", "B", "Smith", "cheapsite", "com", "1", "5", "million", "i", "e", "naïve", "stressed", "vowels", "é", "í", "ó", "ú"]
 ~~~
 
 ## cutr - Extract selected fields of each line of a file by index, range, or regular expression
@@ -219,3 +223,4 @@ experimenting with a nom based word boundary parser, custom parser remains 30% f
 ---
 
 ## kennard-stone -- [Kennard Stone algorithm](http://wiki.eigenvector.com/index.php?title=Kennardstone)
+# 
