@@ -101,12 +101,12 @@ impl WordBoundaryTokenizer {
         tokens
     }
 
-    // returns a list of token references.to_string()
+    // returns a string list of all tokens
     pub fn text_tokens(&self, text: &str) -> Vec<String> {
         self.tokens(text).iter().map(|t| t.value()).collect()
     }
 
-    // filters the tokens on Token::T() and returns a list of their references
+    // filters the tokens on Token::T() and returns a reference list
     pub fn ref_words<'a>(&self, text: &'a str) -> Vec<&'a str> {
         self.tokens(text)
             .into_iter()
@@ -115,7 +115,7 @@ impl WordBoundaryTokenizer {
             .collect()
     }
 
-    // filters the tokens on Token::T() and returns a list of String
+    // filters the tokens on Token::T() and returns a string list
     pub fn words(&self, text: &str) -> Vec<String> {
         self.tokens(text)
             .iter()
@@ -124,8 +124,8 @@ impl WordBoundaryTokenizer {
             .collect()
     }
 
-    // filters the tokens on Token::B() and returns a list of their references.to_string()
-    pub fn text_boundary(&self, text: &str) -> Vec<String> {
+    // filters the tokens on Token::B() and returns a string list
+    pub fn boundaries(&self, text: &str) -> Vec<String> {
         self.tokens(text)
             .iter()
             .filter(|t| matches!(t, Token::B(_)))
