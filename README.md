@@ -56,7 +56,10 @@ impl TokenizationSpec {
         }
     }
 }
+~~~
 
+### Example
+~~~
 use tokenize::{tokenizer_from_spec, TokenizationSpec, TokenizerType};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let utf8str = "\u{201F}THE-BIG-RIPOFF\u{201D} Mr\u{FE52} & Mrs\u{2024} John B. Smith, cheapsite.com, 1.5 million, i\u{FF0E}e\u{2024}, 🍺+🍕, na\u{00EF}ve, stressed vowels: \u{00E9}, \u{00ED}, \u{00F3}, \u{00FA}, \u{2026}";
