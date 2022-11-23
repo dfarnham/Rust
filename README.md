@@ -35,8 +35,8 @@ The TokenizerType is one of:
 	* UnicodeSegment
 	* UnicodeWord
 	* Whitespace
-	* WordBoundary (Option<String>) -- String containing additional boundary chars
-		that a \b assertion would assert as false. e.g. "-'"
+	* WordBoundary (Option<String>) -- String containing boundary chars to exclude.
+		Overrides the standard \b assertion for that char. e.g. "-'"
 
 pub struct TokenizationSpec {
     pub tokenizer_type: TokenizerType,
