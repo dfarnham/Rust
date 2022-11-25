@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "us" | "unicode_segment" => TokenizerType::UnicodeSegment,
                 "uw" | "unicode_word" => TokenizerType::UnicodeWord,
                 "ws" | "whitespace" => TokenizerType::Whitespace,
-                "wb" | "wordboundary" => TokenizerType::WordBoundary,
+                "rb" | "regexboundary" => TokenizerType::RegexBoundary,
                 _ => {
                     return Err(Box::new(Error::new(
                         ErrorKind::InvalidInput,
