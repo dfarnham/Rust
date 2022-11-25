@@ -27,7 +27,7 @@ pub enum TokenizerType {
     UnicodeSegment,
     UnicodeWord,
     Whitespace,
-    WordBoundary,
+    RegexBoundary,
 }
 
 //================================================
@@ -49,7 +49,7 @@ pub fn tokenizer_from_spec(spec: &TokenizationSpec) -> Result<Tokenizer, Tokeniz
     // to WordTokenizers requiring some form of initialization
     //
     // 1. SplitStr supplies `param` as the String pattern to split()
-    // 2. WordBoundary interprets `param` as additional boundary chars
+    // 2. RegexBoundary interprets `param` as additional boundary chars
     let param = spec.tokenizer_init_param.clone();
 
     let word_tokenizer = match spec.tokenizer_type {
@@ -57,7 +57,7 @@ pub fn tokenizer_from_spec(spec: &TokenizationSpec) -> Result<Tokenizer, Tokeniz
         TokenizerType::UnicodeSegment => WordTokenizer::UnicodeSegment(UnicodeSegmentTokenizer::default()),
         TokenizerType::UnicodeWord => WordTokenizer::UnicodeWord(UnicodeWordTokenizer::default()),
         TokenizerType::Whitespace => WordTokenizer::Whitespace(WhitespaceTokenizer::default()),
-        TokenizerType::WordBoundary => WordTokenizer::WordBoundary(WordBoundaryTokenizer::new(param)),
+        TokenizerType::RegexBoundary => WordTokenizer::RegexBoundary(RegexBoundaryTokenizer::new(param)),
     };
 
     // build a Tokenizer from the `config` and instantiated WordTokenizer
@@ -89,7 +89,7 @@ pub enum WordTokenizer {
     UnicodeSegment(UnicodeSegmentTokenizer),
     UnicodeWord(UnicodeWordTokenizer),
     Whitespace(WhitespaceTokenizer),
-    WordBoundary(WordBoundaryTokenizer),
+    RegexBoundary(RegexBoundaryTokenizer),
 }
 
 // *********************************************************
@@ -143,12 +143,12 @@ impl WordTokens for WhitespaceTokenizer {
 }
 
 //================================================
-//            Word Boundary Tokenizer
-//          TokenizerType::WordBoundary
+//            Regex Boundary Tokenizer
+//          TokenizerType::RegexBoundary
 //================================================
-pub mod wordboundary;
-use wordboundary::WordBoundaryTokenizer;
-impl WordTokens for WordBoundaryTokenizer {
+pub mod regexboundary;
+use regexboundary::RegexBoundaryTokenizer;
+impl WordTokens for RegexBoundaryTokenizer {
     fn words(&self, text: &str) -> Vec<String> {
         self.words(text)
     }
@@ -169,7 +169,7 @@ mod tests {
         is_normal::<UnicodeSegmentTokenizer>();
         is_normal::<UnicodeWordTokenizer>();
         is_normal::<WhitespaceTokenizer>();
-        is_normal::<WordBoundaryTokenizer>();
+        is_normal::<RegexBoundaryTokenizer>();
         is_normal::<Tokenizer>()
     }
 }

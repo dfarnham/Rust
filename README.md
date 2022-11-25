@@ -39,8 +39,8 @@ The TokenizerType is one of:
 	* UnicodeSegment
 	* UnicodeWord
 	* Whitespace
-	* WordBoundary (Option<String>) -- String containing boundary chars to exclude.
-		Overrides the standard \b assertion for that char. e.g. "-'"
+	* RegexBoundary (Option<String>) -- String containing boundary chars to exclude from \b.
+		Overrides the standard \b assertion for characters e.g. "-'"
 
 pub struct TokenizationSpec {
     pub tokenizer_type: TokenizerType,
@@ -74,7 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut tokenizer_spec = TokenizationSpec::default();
 
     for toker in [TokenizerType::Whitespace, TokenizerType::SplitStr, TokenizerType::UnicodeSegment,
-                  TokenizerType::UnicodeWord, TokenizerType::WordBoundary] {
+                  TokenizerType::UnicodeWord, TokenizerType::RegexBoundary] {
         tokenizer_spec.tokenizer_type = toker;
         let tokenizer = tokenizer_from_spec(&tokenizer_spec)?;
         println!("{:?}:\t{:?}\n", tokenizer_spec.tokenizer_type, tokenizer.tokens(utf8str));
@@ -93,7 +93,7 @@ UnicodeSegment:	["‟", "THE", "-", "BIG", "-", "RIPOFF", "”", " ", "Mr", "﹒
 
 UnicodeWord:	["THE", "BIG", "RIPOFF", "Mr", "Mrs", "John", "B", "Smith", "cheapsite.com", "1.5", "million", "i．e", "naïve", "stressed", "vowels", "é", "í", "ó", "ú"]
 
-WordBoundary:	["THE", "BIG", "RIPOFF", "Mr", "Mrs", "John", "B", "Smith", "cheapsite", "com", "1", "5", "million", "i", "e", "naïve", "stressed", "vowels", "é", "í", "ó", "ú"]
+RegexBoundary:	["THE", "BIG", "RIPOFF", "Mr", "Mrs", "John", "B", "Smith", "cheapsite", "com", "1", "5", "million", "i", "e", "naïve", "stressed", "vowels", "é", "í", "ó", "ú"]
 ~~~
 
 ## cutr - Extract selected fields of each line of a file by index, range, or regular expression

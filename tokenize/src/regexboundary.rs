@@ -37,11 +37,11 @@ impl<'a> Token<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WordBoundaryTokenizer {
+pub struct RegexBoundaryTokenizer {
     // chars in "excluded_boundary_chars" that would typically return true on Regex \b that will now return false
     excluded_boundary_chars: String,
 }
-impl WordBoundaryTokenizer {
+impl RegexBoundaryTokenizer {
     pub fn default() -> Self {
         Self::new(None)
     }
@@ -140,11 +140,11 @@ impl WordBoundaryTokenizer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::wordboundary::Token::{B, T};
+    use super::Token::{B, T};
 
     #[test]
     fn empty() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = "";
         let tokens = wbt.tokens(input);
@@ -154,7 +154,7 @@ mod tests {
     #[test]
     fn empty_excluded() {
         let excluded = Some("".into());
-        let wbt = WordBoundaryTokenizer::new(excluded);
+        let wbt = RegexBoundaryTokenizer::new(excluded);
 
         let input = "";
         let tokens = wbt.tokens(input);
@@ -165,7 +165,7 @@ mod tests {
 
     #[test]
     fn b() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = ",";
         let tokens = wbt.tokens(input);
@@ -176,7 +176,7 @@ mod tests {
 
     #[test]
     fn t() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = "a";
         let tokens = wbt.tokens(input);
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn bb() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = ",,";
         let tokens = wbt.tokens(input);
@@ -198,7 +198,7 @@ mod tests {
 
     #[test]
     fn tt() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = "aa";
         let tokens = wbt.tokens(input);
@@ -209,7 +209,7 @@ mod tests {
 
     #[test]
     fn bt() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = ",a";
         let tokens = wbt.tokens(input);
@@ -220,7 +220,7 @@ mod tests {
 
     #[test]
     fn tb() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = "a,";
         let tokens = wbt.tokens(input);
@@ -231,7 +231,7 @@ mod tests {
 
     #[test]
     fn btb() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = ",a;";
         let tokens = wbt.tokens(input);
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn tbt() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = "a,b";
         let tokens = wbt.tokens(input);
@@ -253,7 +253,7 @@ mod tests {
 
     #[test]
     fn bbt() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = ",;a";
         let tokens = wbt.tokens(input);
@@ -264,7 +264,7 @@ mod tests {
 
     #[test]
     fn ttb() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = "ab,";
         let tokens = wbt.tokens(input);
@@ -275,7 +275,7 @@ mod tests {
 
     #[test]
     fn btt() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = ",ab";
         let tokens = wbt.tokens(input);
@@ -286,7 +286,7 @@ mod tests {
 
     #[test]
     fn tbb() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = "a,;";
         let tokens = wbt.tokens(input);
@@ -297,7 +297,7 @@ mod tests {
 
     #[test]
     fn bttb() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = ",ab;";
         let tokens = wbt.tokens(input);
@@ -308,7 +308,7 @@ mod tests {
 
     #[test]
     fn tbbt() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = "a,;b";
         let tokens = wbt.tokens(input);
@@ -319,7 +319,7 @@ mod tests {
 
     #[test]
     fn bbtbb() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = ",;a.!";
         let tokens = wbt.tokens(input);
@@ -330,7 +330,7 @@ mod tests {
 
     #[test]
     fn ttbtt() {
-        let wbt = WordBoundaryTokenizer::default();
+        let wbt = RegexBoundaryTokenizer::default();
 
         let input = "ab,cd";
         let tokens = wbt.tokens(input);
@@ -342,7 +342,7 @@ mod tests {
     #[test]
     fn emoji_excluded() {
         let excluded = Some("'🍺🍕".into());
-        let wbt = WordBoundaryTokenizer::new(excluded);
+        let wbt = RegexBoundaryTokenizer::new(excluded);
 
         let input = "Don't forget the 🍺+🍕 party!x";
         let tokens = wbt.tokens(input);
@@ -377,7 +377,7 @@ mod tests {
     #[test]
     fn other() {
         let excluded = Some("'¡".into());
-        let wbt = WordBoundaryTokenizer::new(excluded);
+        let wbt = RegexBoundaryTokenizer::new(excluded);
 
         let input = "Thorbjørn Risager, Sinéad O'Connor, ¡Americano!";
         let tokens = wbt.tokens(input);
