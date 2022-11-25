@@ -42,7 +42,7 @@ pub fn get_args() -> ArgMatches {
                 .long("tokenizer")
                 .value_name("str")
                 .default_value("whitespace")
-                .help("Use <str> as the tokenizer (ss, us, uw, ws, wb)"),
+                .help("Use <str> as the tokenizer (ss, us, uw, ws, rb)"),
         )
         .arg(
             Arg::new("tokenizer_param")
