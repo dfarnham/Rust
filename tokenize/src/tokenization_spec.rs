@@ -9,9 +9,9 @@ pub struct TokenizationSpec {
     pub trimmed_tokens: bool,
     pub filter_tokens_re: Option<String>,
 }
-impl TokenizationSpec {
-    pub fn default() -> Self {
-        Self {
+impl Default for TokenizationSpec {
+    fn default() -> Self {
+        TokenizationSpec {
             tokenizer_type: TokenizerType::Whitespace,
             tokenizer_init_param: None,
             downcase_text: false,

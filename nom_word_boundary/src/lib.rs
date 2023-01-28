@@ -46,16 +46,12 @@ impl<'a> Token<'a> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct WordBoundaryTokenizer {
     // chars in "excluded_boundary_chars" that would typically return true on Regex \b that will now return false
     excluded_boundary_chars: String,
 }
 impl WordBoundaryTokenizer {
-    pub fn default() -> Self {
-        Self::new("")
-    }
-
     pub fn new(excluded_boundary_chars: &str) -> Self {
         Self {
             excluded_boundary_chars: excluded_boundary_chars.into(),
@@ -146,7 +142,7 @@ impl WordBoundaryTokenizer {
 
         let (unparsed, value) = parse?;
         // if this isn't true we don't understand our parser
-        assert!(unparsed.is_empty(), "unparsed input = {}", unparsed);
+        assert!(unparsed.is_empty(), "unparsed input = {unparsed}");
 
         let mut tokens = vec![];
         for (b, t) in value.into_iter() {

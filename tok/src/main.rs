@@ -61,7 +61,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for line in lines {
         let tokens = tokenizer.tokens(&line);
         //writeln!(stdout, "{}", tokens.join(""))?;
-        writeln!(stdout, "{:?}", tokens)?;
+        writeln!(stdout, "{tokens:?}")?;
     }
     Ok(())
 }

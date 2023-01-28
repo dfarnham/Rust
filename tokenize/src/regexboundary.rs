@@ -36,16 +36,12 @@ impl<'a> Token<'a> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct RegexBoundaryTokenizer {
     // chars in "excluded_boundary_chars" that would typically return true on Regex \b that will now return false
     excluded_boundary_chars: String,
 }
 impl RegexBoundaryTokenizer {
-    pub fn default() -> Self {
-        Self::new(None)
-    }
-
     pub fn new(excluded_boundary_chars: Option<String>) -> Self {
         Self {
             excluded_boundary_chars: excluded_boundary_chars.unwrap_or_else(|| "".into()),
@@ -139,8 +135,8 @@ impl RegexBoundaryTokenizer {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::Token::{B, T};
+    use super::*;
 
     #[test]
     fn empty() {

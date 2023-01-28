@@ -18,7 +18,7 @@ fn captured_index(cap: Match) -> Result<usize, Box<dyn std::error::Error>> {
     Ok(cap
         .as_str()
         .parse::<usize>()
-        .with_context(|| format!("regex capture error? -f {:?}", cap))?)
+        .with_context(|| format!("regex capture error? -f {cap:?}"))?)
 }
 // ==============================================================
 
@@ -89,8 +89,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // build a TokenizerSpec from arg inputs
-    let mut tokenizer_spec = TokenizationSpec::default();
-    tokenizer_spec.trimmed_tokens = trim;
+    let mut tokenizer_spec = TokenizationSpec {
+        trimmed_tokens: trim,
+        ..Default::default()
+    };
     if input_delim.is_some() {
         tokenizer_spec.tokenizer_type = TokenizerType::SplitStr;
         tokenizer_spec.tokenizer_init_param = input_delim;
@@ -184,7 +186,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             // -f N => FieldSpec::Index or parse() Err
             None => field_enums.push(FieldSpec::Index(
-                s.parse::<usize>().with_context(|| format!("-f {:?}", s))?,
+                s.parse::<usize>().with_context(|| format!("-f {s:?}"))?,
             )),
         }
     }

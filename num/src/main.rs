@@ -94,7 +94,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bytes = char.bytes().collect();
         utf8hex = bytes
             .iter()
-            .map(|b| format!("{:#02x}", b).trim_start_matches("0x").to_string())
+            .map(|b| format!("{b:#02x}").trim_start_matches("0x").to_string())
             .collect::<Vec<_>>()
             .concat()
     }
@@ -153,7 +153,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 bytes.push(((n >> 6 & 0x3f) | 0x80) as u8);
                 bytes.push(((n & 0x3f) | 0x80) as u8);
             }
-            _ => panic!("unable to convert to UTF-8: [{}]", n),
+            _ => panic!("unable to convert to UTF-8: [{n}]"),
         }
     }
 
@@ -162,7 +162,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let n_bin = format!("{n:#b}").trim_start_matches("0b").to_owned();
     let n_utf8 = bytes
         .iter()
-        .map(|b| format!("{:#02x}", b).trim_start_matches("0x").to_owned())
+        .map(|b| format!("{b:#02x}").trim_start_matches("0x").to_owned())
         .collect::<Vec<_>>()
         .join(" ");
     let n_utf16 = match (0x10000..=0x10ffff).contains(&n) {
