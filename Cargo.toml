@@ -10,7 +10,8 @@ members = [
     "sha",
     "tok",
     "utf8char",
-    "uuid",
+    "uuids",
+    "feat",
 
     # libraries
     "general",

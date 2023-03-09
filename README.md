@@ -203,13 +203,13 @@ Example: echo -n '🍺&🍕' | utf8char -b '[' -a ']'
 
 ---
 
-## uuid -- uuid version 4,5 utility
+## uuids -- uuid version 4,5 utility
 
 ~~~
 UUID v4,v5
 
 USAGE:
-    uuid [OPTIONS] [FILE]
+    uuids [OPTIONS] [FILE]
 
 ARGS:
     <FILE>    file|stdin, filename of "-" implies stdin
