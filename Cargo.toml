@@ -5,6 +5,7 @@ members = [
     "b64",
     "cutr",
     "kennard-stone",
+    "mp4tag",
     "nom_word_boundary",
     "num",
     "sha",

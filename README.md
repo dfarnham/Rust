@@ -15,6 +15,34 @@ $ cd <tool>
 $ cargo install --path .
 ~~~
 
+## mp4tag - Simple utility to overwrite/clear tags in an .m4a file
+
+~~~
+Utility to overwrite/clear tags in an .m4a file
+
+Usage: mp4tag [OPTIONS] <FILE>
+
+Arguments:
+  <FILE>  Audio file
+
+Options:
+  -a, --artist <artist>              Set <artist>, empty value removes <artist>
+  -A, --album <album>                Set <album>, empty value removes <album>
+  -b, --album-artist <album artist>  Set <album artist>, empty value removes <album artist>
+  -t, --title <title>                Set <title>, empty value removes <title>
+  -n, --track-number <track number>  Set <track number>, 0 removes <track number>
+  -N, --total-tracks <total tracks>  Set <total tracks>, 0 removes <total tracks>
+  -d, --disc-number <disc number>    Set <disc number>, 0 removes <disc number>
+  -D, --total-discs <total discs>    Set <total discs>, 0 removes <total discs>
+  -y, --year <year>                  Set <year>, 0 removes <year>
+  -g, --genre <genre>                Set <genre>, empty value removes <genre>
+  -c, --compilation                  Set <compilation flag>
+  -C, --no-compilation               Remove <compilation flag>
+  -z, --zero                         Remove all fields and metadata
+  -h, --help                         Print help
+  -V, --version                      Print version
+~~~
+
 ## tokenize - Library to acquire/configure text tokenizers given a specification
 
 ~~~
