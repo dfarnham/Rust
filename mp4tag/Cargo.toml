@@ -1,5 +1,5 @@
 [package]
-description = "Utility to overwrite/clear tags in an .m4a file"
+description = "Utility to overwrite/clear tags in .m4a files"
 name = "mp4tag"
 version = "0.1.0"
 authors = ["Dave Farnham <dave.farnham@icloud.com>"]
