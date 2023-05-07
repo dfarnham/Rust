@@ -14,14 +14,16 @@ pub fn get_args() -> ArgMatches {
             Arg::new("FILE")
                 .help("Audio file")
                 .required(true)
-                .value_parser(value_parser!(PathBuf)),
+                .value_parser(value_parser!(PathBuf))
+                .num_args(1..)
+                .action(ArgAction::Append),
         )
         .arg(
             Arg::new("artist")
                 .short('a')
                 .long("artist")
                 .value_name("artist")
-                .value_parser(clap::builder::NonEmptyStringValueParser::new())
+                .value_parser(clap::builder::StringValueParser::new())
                 .help("Set <artist>, empty value removes <artist>"),
         )
         .arg(
@@ -29,7 +31,7 @@ pub fn get_args() -> ArgMatches {
                 .short('A')
                 .long("album")
                 .value_name("album")
-                .value_parser(clap::builder::NonEmptyStringValueParser::new())
+                .value_parser(clap::builder::StringValueParser::new())
                 .help("Set <album>, empty value removes <album>"),
         )
         .arg(
@@ -37,7 +39,7 @@ pub fn get_args() -> ArgMatches {
                 .short('b')
                 .long("album-artist")
                 .value_name("album artist")
-                .value_parser(clap::builder::NonEmptyStringValueParser::new())
+                .value_parser(clap::builder::StringValueParser::new())
                 .help("Set <album artist>, empty value removes <album artist>"),
         )
         .arg(
@@ -45,8 +47,17 @@ pub fn get_args() -> ArgMatches {
                 .short('t')
                 .long("title")
                 .value_name("title")
-                .value_parser(clap::builder::NonEmptyStringValueParser::new())
+                .value_parser(clap::builder::StringValueParser::new())
                 .help("Set <title>, empty value removes <title>"),
+        )
+        .arg(
+            Arg::new("trkn")
+                .short('T')
+                .long("trkn")
+                .value_name("trkn")
+                .value_parser(clap::builder::StringValueParser::new())
+                .conflicts_with_all(["track-number", "total-tracks"])
+                .help("Sets both <track number> and <total-tracks>, ex. -T 1/9"),
         )
         .arg(
             Arg::new("track-number")
@@ -85,7 +96,7 @@ pub fn get_args() -> ArgMatches {
                 .short('y')
                 .long("year")
                 .value_name("year")
-                .value_parser(clap::builder::NonEmptyStringValueParser::new())
+                .value_parser(clap::builder::StringValueParser::new())
                 .help("Set <year>, 0 removes <year>"),
         )
         .arg(
@@ -93,7 +104,7 @@ pub fn get_args() -> ArgMatches {
                 .short('g')
                 .long("genre")
                 .value_name("genre")
-                .value_parser(clap::builder::NonEmptyStringValueParser::new())
+                .value_parser(clap::builder::StringValueParser::new())
                 .action(ArgAction::Append)
                 .help("Set <genre>, empty value removes <genre>"),
         )
