@@ -15,7 +15,7 @@ $ cd <tool>
 $ cargo install --path .
 ~~~
 
-## mp4tag - Simple utility to overwrite/clear tags in an .m4a file
+## mp4tag - Simple utility to overwrite/clear tags in .m4a files
 
 ~~~
 Utility to overwrite/clear tags in .m4a files
