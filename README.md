@@ -18,18 +18,19 @@ $ cargo install --path .
 ## mp4tag - Simple utility to overwrite/clear tags in an .m4a file
 
 ~~~
-Utility to overwrite/clear tags in an .m4a file
+Utility to overwrite/clear tags in .m4a files
 
-Usage: mp4tag [OPTIONS] <FILE>
+Usage: mp4tag [OPTIONS] <FILE>...
 
 Arguments:
-  <FILE>  Audio file
+  <FILE>...  Audio file
 
 Options:
   -a, --artist <artist>              Set <artist>, empty value removes <artist>
   -A, --album <album>                Set <album>, empty value removes <album>
   -b, --album-artist <album artist>  Set <album artist>, empty value removes <album artist>
   -t, --title <title>                Set <title>, empty value removes <title>
+  -T, --trkn <trkn>                  Sets both <track number> and <total-tracks>, ex. -T 1/9
   -n, --track-number <track number>  Set <track number>, 0 removes <track number>
   -N, --total-tracks <total tracks>  Set <total tracks>, 0 removes <total tracks>
   -d, --disc-number <disc number>    Set <disc number>, 0 removes <disc number>
