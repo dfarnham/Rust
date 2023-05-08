@@ -10,5 +10,5 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1"
-clap = { version = "3", features = ["derive"] }
+clap = { version = "4.2.7", features = ["derive"] }
 general = { path = "../general" }

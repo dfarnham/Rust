@@ -144,28 +144,21 @@ fn main() -> Result<(), Box<dyn Error>> {
     #[clap(author, version, about, long_about=None)]
     struct Args {
         /// Encode to Base64 (default)
-        #[clap(short, long)]
+        #[arg(short, long, group = "encode_or_decode")]
         encode: bool,
 
         /// Decode from Base64
-        #[clap(short, long)]
+        #[arg(short, long, group = "encode_or_decode")]
         decode: bool,
 
         /// Break output into lines of length 76
-        #[clap(short, long)]
+        #[arg(short, long)]
         pretty: bool,
 
         /// file|stdin, filename of "-" implies stdin
-        #[clap(multiple_values = false)]
         file: Option<std::path::PathBuf>,
     }
     let args = Args::parse();
-
-    // --encode, --decode are mutually exclusive
-    // not specifying a mode implies --encode
-    if args.encode && args.decode {
-        return Err("options --encode, --decode are mutually exclusive".into());
-    }
 
     // allocate a buffer to receive data from stdin|file, note a filename of "-" implies stdin
     let mut buffer = vec![];
