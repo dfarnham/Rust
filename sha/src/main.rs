@@ -18,23 +18,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     #[clap(author, version, about, long_about=None)]
     struct Args {
         /// The SHA-1 hash function should be considered cryptographically broken: https://sha-mbles.github.io/
-        #[clap(short = '1')]
+        #[arg(short = '1', group = "algorithm")]
         v1: bool,
 
         /// SHA-2,256 (default)
-        #[clap(short = '2')]
+        #[arg(short = '2', group = "algorithm")]
         v256: bool,
 
         /// SHA-2,512
-        #[clap(short = '5')]
+        #[arg(short = '5', group = "algorithm")]
         v512: bool,
 
         /// Pretty format which is broken up with whitespace
-        #[clap(short)]
+        #[arg(short)]
         pretty: bool,
 
         /// file|stdin, filename of "-" implies stdin
-        #[clap(multiple_values = true)]
         files: Vec<std::path::PathBuf>,
     }
     let args = Args::parse();
@@ -78,12 +77,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         for (i, c) in digest.chars().enumerate() {
             write!(stdout, "{}", c.to_string().green())?;
-            //print!("{c}");
             if (i + 1) % n == 0 {
                 write!(stdout, " ")?;
             }
         }
-        //println!("\t{input_name}");
         writeln!(stdout, "\t{}", input_name.yellow().bold())?;
     }
     Ok(())
