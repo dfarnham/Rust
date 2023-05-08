@@ -13,31 +13,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[clap(author, version, about, long_about=None)]
     struct Args {
         /// UTF-8 Char,     num -c 🍺
-        #[clap(short, long)]
+        #[arg(short, long)]
         char: Option<String>,
 
         /// Binary,         num -b 11111001101111010
-        #[clap(short, long)]
+        #[arg(short, long)]
         binary: Option<String>,
 
         /// Decimal,        num -d 127866
-        #[clap(short, long)]
+        #[arg(short, long)]
         decimal: Option<u32>,
 
         /// Hexadecimal,    num -x 1f37a
-        #[clap(short = 'x', long)]
+        #[arg(short = 'x', long)]
         hex: Option<String>,
 
         /// Octal,          num -o 371572
-        #[clap(short, long)]
+        #[arg(short, long)]
         octal: Option<String>,
 
         /// UTF-16,         num -U 'd83c df7a'
-        #[clap(short = 'U', long)]
+        #[arg(short = 'U', long)]
         utf16: Option<String>,
 
         /// UTF-8,          num -u 'f0 9f 8d ba'
-        #[clap(short = 'u', long)]
+        #[arg(short = 'u', long)]
         utf8: Option<String>,
     }
     let args = Args::parse();
