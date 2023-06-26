@@ -174,23 +174,23 @@ OPTIONS:
 ## num - Number/UTF Representation Converter
 
 ~~~
-Number/UTF Representation Converter
+Character Number/UTF Representation Converter
 
 USAGE:
-    num [OPTIONS]
+    cnum [OPTIONS]
 
 OPTIONS:
-    -b, --binary <BINARY>      Binary,         num -b 11111001101111010
-    -c, --char <CHAR>          UTF-8 Char,     num -c 🍺
-    -d, --decimal <DECIMAL>    Decimal,        num -d 127866
+    -b, --binary <BINARY>      Binary,         cnum -b 11111001101111010
+    -c, --char <CHAR>          UTF-8 Char,     cnum -c 🍺
+    -d, --decimal <DECIMAL>    Decimal,        cnum -d 127866
     -h, --help                 Print help information
-    -o, --octal <OCTAL>        Octal,          num -o 371572
-    -u, --utf8 <UTF8>          UTF-8,          num -u 'f0 9f 8d ba'
-    -U, --utf16 <UTF16>        UTF-16,         num -U 'd83c df7a'
+    -o, --octal <OCTAL>        Octal,          cnum -o 371572
+    -u, --utf8 <UTF8>          UTF-8,          cnum -u 'f0 9f 8d ba'
+    -U, --utf16 <UTF16>        UTF-16,         cnum -U 'd83c df7a'
     -V, --version              Print version information
-    -x, --hex <HEX>            Hexadecimal,    num -x 1f37a
+    -x, --hex <HEX>            Hexadecimal,    cnum -x 1f37a
 
-$ num -c 🍺
+$ cnum -c 🍺
 (Dec) 127866	(Oct) 371572	(Hex) 1f37a	(Bin[15]) 11111001101111010	(UTF-8) f0 9f 8d ba	(UTF-16) d83c df7a	(UTF-8 Char) 🍺
 ~~~
 

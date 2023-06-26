@@ -12,32 +12,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[derive(Parser, Debug)]
     #[clap(author, version, about, long_about=None)]
     struct Args {
-        /// UTF-8 Char,     num -c 🍺
-        #[arg(short, long)]
+        /// UTF-8 Char,     cnum -c 🍺
+        #[clap(short, long)]
         char: Option<String>,
 
-        /// Binary,         num -b 11111001101111010
-        #[arg(short, long)]
+        /// Binary,         cnum -b 11111001101111010
+        #[clap(short, long)]
         binary: Option<String>,
 
-        /// Decimal,        num -d 127866
-        #[arg(short, long)]
+        /// Decimal,        cnum -d 127866
+        #[clap(short, long)]
         decimal: Option<u32>,
 
-        /// Hexadecimal,    num -x 1f37a
-        #[arg(short = 'x', long)]
+        /// Hexadecimal,    cnum -x 1f37a
+        #[clap(short = 'x', long)]
         hex: Option<String>,
 
-        /// Octal,          num -o 371572
-        #[arg(short, long)]
+        /// Octal,          cnum -o 371572
+        #[clap(short, long)]
         octal: Option<String>,
 
-        /// UTF-16,         num -U 'd83c df7a'
-        #[arg(short = 'U', long)]
+        /// UTF-16,         cnum -U 'd83c df7a'
+        #[clap(short = 'U', long)]
         utf16: Option<String>,
 
-        /// UTF-8,          num -u 'f0 9f 8d ba'
-        #[arg(short = 'u', long)]
+        /// UTF-8,          cnum -u 'f0 9f 8d ba'
+        #[clap(short = 'u', long)]
         utf8: Option<String>,
     }
     let args = Args::parse();
@@ -61,6 +61,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         0
     };
+
+    if n > 0x10FFFF {
+        return Err(format!("Converted input value (Dec) {n} must be <= (Dec) 1114111, (Hex) 0x10FFFF").into());
+    }
 
     // -u, -U, -c
     if let Some(utf8) = args.utf8 {
