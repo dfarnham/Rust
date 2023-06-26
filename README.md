@@ -171,7 +171,7 @@ OPTIONS:
 
 ---
 
-## num - Number/UTF Representation Converter
+## cnum - Character Number/UTF Representation Converter
 
 ~~~
 Character Number/UTF Representation Converter
