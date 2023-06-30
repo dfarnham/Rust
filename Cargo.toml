@@ -3,6 +3,7 @@
 members = [
     # binaries
     "b64",
+    "crc16",
     "cutr",
     "kennard-stone",
     "mp4tag",
