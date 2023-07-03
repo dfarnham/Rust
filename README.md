@@ -253,6 +253,23 @@ OPTIONS:
 
 ---
 
+## crc16 - Cyclic Redundancy Check
+
+~~~
+CRC-16: x^16 + x^15 + x^2 + 1
+
+Usage: crc16 [FILES]...
+
+Arguments:
+  [FILES]...  file|stdin, filename of "-" implies stdin
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+~~~
+
+---  
+
 ## nom\_word\_boundary
 experimenting with a nom based word boundary parser, custom parser remains 30% faster however.
 
