@@ -8,7 +8,7 @@ Build everything
 $ cargo build --bins -r
 
 Lint check everything
-$ cargo clippy
+$ cargo clippy -r
 
 Install a tool to ~/.cargo/bin
 $ cd <tool>
