@@ -22,7 +22,10 @@ members = [
 [workspace.dependencies]
 anyhow = "1"
 clap = { version = "4.3.8", features = ["cargo", "derive"] }
+colored = "2"
 general = { path = "general" }
+itertools = "0.10"
 lazy_static = "1.4"
+rand = "0.8.5"
 regex = "1.7"
 tokenize = { path = "tokenize" }

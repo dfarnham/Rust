@@ -11,7 +11,7 @@ edition = "2021"
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
-colored = "2"
+colored = { workspace = true }
 general = { workspace = true }
 sha1 = "0.10"
 sha2 = "0.10"

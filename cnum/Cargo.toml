@@ -11,5 +11,5 @@ edition = "2021"
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
-colored = "2"
+colored = { workspace = true }
 general = { workspace = true }

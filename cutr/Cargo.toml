@@ -12,6 +12,6 @@ edition = "2021"
 anyhow = { workspace = true }
 clap = { workspace = true }
 general = { workspace = true }
-itertools = "0.10"
+itertools = { workspace = true }
 regex = { workspace = true }
 tokenize = { workspace = true }
