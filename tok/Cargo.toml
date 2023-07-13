@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true }
-general = { path = "../general" }
-tokenize = { path = "../tokenize" }
+general = { workspace = true }
+tokenize = { workspace = true }

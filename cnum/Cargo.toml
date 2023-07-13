@@ -12,4 +12,4 @@ edition = "2021"
 anyhow = { workspace = true }
 clap = { workspace = true }
 colored = "2"
-general = { path = "../general" }
+general = { workspace = true }
