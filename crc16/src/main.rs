@@ -76,7 +76,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         };
 
-        // Add 2-bytes of zero padding
+        // Output CRC-16/UMTS
         println!("{input_name}: {}", crc16(&msg));
     }
 
