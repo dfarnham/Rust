@@ -9,5 +9,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1"
+anyhow = { workspace = true }
 getopts = "0.2"

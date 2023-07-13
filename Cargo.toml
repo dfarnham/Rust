@@ -18,3 +18,9 @@ members = [
     "general",
     "tokenize",
 ]
+
+[workspace.dependencies]
+anyhow = "1"
+clap = { version = "4.3.8", features = ["cargo", "derive"] }
+lazy_static = "1.4"
+regex = "1.7"

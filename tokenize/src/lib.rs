@@ -54,9 +54,9 @@ pub fn tokenizer_from_spec(spec: &TokenizationSpec) -> Result<Tokenizer, Tokeniz
 
     let word_tokenizer = match spec.tokenizer_type {
         TokenizerType::SplitStr => WordTokenizer::SplitStr(SplitStrTokenizer::new(param)),
-        TokenizerType::UnicodeSegment => WordTokenizer::UnicodeSegment(UnicodeSegmentTokenizer::default()),
-        TokenizerType::UnicodeWord => WordTokenizer::UnicodeWord(UnicodeWordTokenizer::default()),
-        TokenizerType::Whitespace => WordTokenizer::Whitespace(WhitespaceTokenizer::default()),
+        TokenizerType::UnicodeSegment => WordTokenizer::UnicodeSegment(UnicodeSegmentTokenizer),
+        TokenizerType::UnicodeWord => WordTokenizer::UnicodeWord(UnicodeWordTokenizer),
+        TokenizerType::Whitespace => WordTokenizer::Whitespace(WhitespaceTokenizer),
         TokenizerType::RegexBoundary => WordTokenizer::RegexBoundary(RegexBoundaryTokenizer::new(param)),
     };
 

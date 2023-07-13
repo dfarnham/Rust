@@ -9,7 +9,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "4", features = ["cargo"] }
+anyhow = { workspace = true }
+clap = { workspace = true }
 mp4ameta = "0.11.0"
 general = { path = "../general" }
-anyhow = "1.0.71"

@@ -9,9 +9,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1"
-clap = { version = "4", features = ["cargo"] }
+anyhow = { workspace = true }
+clap = { workspace = true }
 general = { path = "../general" }
 tokenize = { path = "../tokenize" }
 itertools = "0.10"
-regex = "1.7"
+regex = { workspace = true }
