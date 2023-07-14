@@ -42,29 +42,8 @@ const TABLE: [u16; 256] = [
       544, 33317, 33327,   554, 33339,   574,   564, 33329, 33299,   534,   540, 33305,   520, 33293, 33287,   514,
 ];
 
-// TABLE generator
-//
-// Function to compute the TABLE using the standard algorithm
-#[allow(dead_code)]
-fn crc16_table_generator() -> Vec<u16> {
-    (0..256).map(|i| crc16_algo(&[0, i as u8])).collect()
-}
-
-// TABLE generator using 2 const functions
-//
-pub(crate) const fn _crc16_byte(byte: u8) -> u16 {
-    let mut value: u16 = (byte as u16) << 8;
-    let mut i = 0;
-    while i < 8 {
-        value = (value << 1) ^ (((value >> 15) & 1) * (CRCPOLY >> 16) as u16);
-        i += 1;
-    }
-    value
-}
 // Returns the CRC-16 TABLE
-//
-// assert_eq!(TABLE, crc16_table());
-pub(crate) const fn crc16_table() -> [u16; 256] {
+const fn crc16_table() -> [u16; 256] {
     let mut table = [0u16; 256];
     let mut i = 0;
     while i < table.len() {
@@ -74,12 +53,34 @@ pub(crate) const fn crc16_table() -> [u16; 256] {
     table
 }
 
-// The first algorithm implementation I learned
-fn crc16_algo(msg: &[u8]) -> u16 {
-    let mut crc: u32;
+// TABLE generator using 2 const functions
+const fn _crc16_byte(byte: u8) -> u16 {
+    let mut value: u16 = (byte as u16) << 8;
+    let mut i = 0;
+    while i < 8 {
+        value = (value << 1) ^ (((value >> 15) & 1) * (CRCPOLY >> 16) as u16);
+        i += 1;
+    }
+    value
+}
 
-    // Minimum input is 2 bytes
-    assert!(msg.len() > 1, "Invalid input");
+// TABLE generator (basic)
+#[allow(dead_code)]
+fn crc16_table_generator() -> Vec<u16> {
+    (0..256).map(|i| crc16_algo(&[i as u8])).collect()
+}
+
+// The implementation I first learned
+fn crc16_algo(msg: &[u8]) -> u16 {
+    // Message must have length > 0
+    assert!(!msg.is_empty(), "Invalid input");
+
+    // Handle single byte inputs
+    if msg.len() == 1 {
+        return crc16_algo(&[0, msg[0]]);
+    }
+
+    let mut crc: u32;
 
     // Load the first 2-bytes
     crc = (msg[0] as u32) << 24;
@@ -202,15 +203,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_bad_input_2() {
-        crc16_algo(&[1]);
-    }
-
-    #[test]
-    fn test_zero() {
-        let data = [0, 0];
-        assert_eq!(0, crc16(&data));
-        assert_eq!(crc16(&data), crc16_algo(&data));
-        assert_eq!(crc16(&data), CRC_16_UMTS.checksum(&data));
+        crc16(&[]);
     }
 
     #[test]
@@ -224,9 +217,10 @@ mod tests {
         }
 
         for i in 0..256 {
-            assert_eq!(TABLE[i], crc16(&[i as u8]));
-            assert_eq!(TABLE[i], crc16_algo(&[0, i as u8]));
-            assert_eq!(TABLE[i], CRC_16_UMTS.checksum(&[i as u8]));
+            let data = [i as u8];
+            assert_eq!(TABLE[i], crc16(&data));
+            assert_eq!(TABLE[i], crc16_algo(&data));
+            assert_eq!(TABLE[i], CRC_16_UMTS.checksum(&data));
         }
     }
 
@@ -273,7 +267,7 @@ mod tests {
     }
 
     #[test]
-    fn crc_constants() {
+    fn crc_module_constants() {
         let data = b"123456789";
         assert_eq!(47933 , CRC_16_ARC.checksum(data));
         assert_eq!(19462 , CRC_16_CDMA2000.checksum(data));
