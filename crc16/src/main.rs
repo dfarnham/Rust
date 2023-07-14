@@ -227,6 +227,7 @@ mod tests {
         for i in 0..256 {
             assert_eq!(TABLE[i], crc16(&[i as u8]));
             assert_eq!(TABLE[i], crc16_algo(&[0, i as u8]));
+            assert_eq!(TABLE[i], CRC_16_UMTS.checksum(&[i as u8]));
         }
     }
 
