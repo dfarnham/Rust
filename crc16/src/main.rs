@@ -75,7 +75,6 @@ pub(crate) const fn crc16_table() -> [u16; 256] {
 }
 
 // The first algorithm implementation I learned
-#[allow(dead_code)]
 fn crc16_algo(msg: &[u8]) -> u16 {
     let mut crc: u32;
 
