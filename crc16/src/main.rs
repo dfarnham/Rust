@@ -17,11 +17,7 @@ use std::io::{self, Read};
 // name="CRC-16/UMTS"
 
 #[rustfmt::skip]
-#[allow(dead_code)]
 const MSB: u32     = 0x80000000; // Most significant bit
-
-#[rustfmt::skip]
-#[allow(dead_code)]
 const CRCPOLY: u32 = 0x80050000; // x^16 + x^15 + x^2 + 1 (shifted << 16)
 
 #[rustfmt::skip]
