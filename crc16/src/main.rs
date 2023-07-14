@@ -104,14 +104,13 @@ fn crc16(msg: &[u8]) -> u16 {
     // Message must have length > 0
     assert!(!msg.is_empty(), "Invalid input");
 
-    let mut crc = 0u16;
-
-    // Get the table from a const function
+    // Get the table from our const function
     let table = crc16_table();
+    //let table = TABLE;
 
+    let mut crc = 0u16;
     for byte in msg.iter() {
         crc ^= (*byte as u16) << 8;
-        //crc = (crc << 8) ^ TABLE[(crc >> 8) as usize];
         crc = (crc << 8) ^ table[(crc >> 8) as usize];
     }
     crc
