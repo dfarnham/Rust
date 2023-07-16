@@ -8,6 +8,7 @@ members = [
     "kennard-stone",
     "mp4tag",
     "nom_word_boundary",
+    "num",
     "cnum",
     "sha",
     "tok",
