@@ -44,6 +44,21 @@ Options:
   -V, --version                      Print version
 ~~~
 
+## qr-otpauth - Simple utility to display the otpauth URI from a QR image
+
+~~~
+Display the optauth URI from a QR image
+
+Usage: qr-otpauth [FILES]...
+
+Arguments:
+  [FILES]...  file|stdin, filename of "-" implies stdin
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+~~~
+
 ## tokenize - Library to acquire/configure text tokenizers given a specification
 
 ~~~

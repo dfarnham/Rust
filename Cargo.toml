@@ -10,6 +10,7 @@ members = [
     "nom_word_boundary",
     "num",
     "cnum",
+    "qr-otpauth",
     "sha",
     "tok",
     "utf8char",
