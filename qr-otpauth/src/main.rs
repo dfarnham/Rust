@@ -38,10 +38,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // ===============================================================
 
     if let Some(migration_data) = args.migration_data {
-        let accounts = google_authenticator_converter::process_data(&migration_data);
-        for account in accounts? {
-            println!("{account:#?}");
-        }
+        let accounts = google_authenticator_converter::process_data(&migration_data)?;
+        writeln!(stdout, "{accounts:#?}")?;
         return Ok(());
     }
 
