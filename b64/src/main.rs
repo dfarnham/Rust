@@ -155,6 +155,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         #[arg(short, long)]
         pretty: bool,
 
+        /// Skip data integrity assertions when decoding (avoids panic)
+        #[arg(short, long)]
+        skip: bool,
+
         /// file|stdin, filename of "-" implies stdin
         file: Option<std::path::PathBuf>,
     }
@@ -196,7 +200,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 n = 0;
             }
         }
-        assert!(n == 0, "final {n} bytes were not decoded");
+        // -s, skips the normal decode integrity assertion
+        if !args.skip {
+            assert!(n == 0, "final {n} bytes were not decoded");
+        }
     } else {
         let mut pretty_counter = 0;
         for byte in buffer.bytes() {
