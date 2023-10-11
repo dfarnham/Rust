@@ -37,12 +37,12 @@ pub fn process_data(string: &str) -> Result<Vec<Account>, Box<dyn std::error::Er
     let migration_payload = proto::google_auth::MigrationPayload::parse_from_bytes(&decoded_data)?;
 
     Ok(migration_payload
-        .otp_parameters
-        .into_iter()
+        .get_otp_parameters()
+        .iter()
         .map(|a| Account {
-            name: a.name,
+            name: a.name.to_owned(),
             secret: base32::encode(alphabet, &a.secret),
-            issuer: a.issuer,
+            issuer: a.issuer.to_owned(),
         })
         .collect())
 }
