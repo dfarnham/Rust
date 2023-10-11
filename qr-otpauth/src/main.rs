@@ -8,20 +8,42 @@ use std::fs::File;
 use std::io::Cursor;
 use std::io::{self, Read, Write};
 
+// adopted from:
+// https://github.com/Levminer/authme/tree/dev/core/crates/google_authenticator_converter
+// https://alexbakker.me/post/parsing-google-auth-export-qr-code.html
+mod google_authenticator_converter;
+
 fn main() -> Result<(), Box<dyn Error>> {
     // Behave like a typical unix utility
     reset_sigpipe()?;
     let mut stdout = io::stdout().lock();
 
     #[derive(Parser, Debug)]
-    #[clap(author, version, about, long_about=None)]
+    #[clap(
+        author,
+        version,
+        about,
+        long_about = "1. Extract the otpauth:// string from an image:\n    $ qr-otpauth my-saved-qr.jpg\n    otpauth://totp/user@site.com?secret=SECRET&issuer=site&algorithm=SHA1&digits=6&period=30\n\n2. Extract account details from otpauth-migration:// data\n    $ qr-otpauth -m 'otpauth-migration://offline?data=bHVja3kK...'\n    Account {\n        name: \"name\",\n        secret: \"Base-32 SECRET\",\n        issuer: \"Site\",\n    }"
+    )]
     struct Args {
-        /// file|stdin, filename of "-" implies stdin
+        /// "otpauth-migration://offline?data=bHVja3kK..."
+        #[arg(short, long)]
+        migration_data: Option<String>,
+
+        /// image-file|stdin, filename of "-" implies stdin
         files: Vec<std::path::PathBuf>,
     }
     let args = Args::parse();
 
     // ===============================================================
+
+    if let Some(migration_data) = args.migration_data {
+        let accounts = google_authenticator_converter::process_data(&migration_data);
+        for account in accounts? {
+            println!("{account:#?}");
+        }
+        return Ok(());
+    }
 
     let files = match args.files.is_empty() {
         true => vec![std::path::PathBuf::from("-")],

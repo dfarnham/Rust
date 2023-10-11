@@ -1,5 +1,5 @@
 [package]
-description = "Display the optauth URI from a QR image"
+description = "Display the optauth URI from a QR image or migration link"
 name = "qr-otpauth"
 version = "0.1.0"
 authors = ["Dave Farnham <dave.farnham@icloud.com>"]
@@ -10,7 +10,13 @@ edition = "2021"
 
 [dependencies]
 anyhow = { workspace = true }
+base32 = "0.4"
+base64 = "0.21"
 clap = { workspace = true }
 general = { workspace = true }
 image = "0.24"
+protobuf = { version = "2.28.0" }
 rqrr = "0.6"
+serde = {version = "1", features = ["derive"] }
+serde_json = { version = "1"}
+urlencoding = "2"
