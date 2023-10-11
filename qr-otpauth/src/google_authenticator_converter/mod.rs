@@ -16,6 +16,7 @@
 //! }
 //!
 
+use crate::Error;
 use base64::{engine::general_purpose, Engine};
 use protobuf::Message;
 
@@ -29,7 +30,7 @@ pub struct Account {
 }
 
 /// Convert a Google Authenticator migration QR code string to a list of accounts
-pub fn process_data(string: &str) -> Result<Vec<Account>, Box<dyn std::error::Error>> {
+pub fn process_data(string: &str) -> Result<Vec<Account>, Box<dyn Error>> {
     let alphabet = base32::Alphabet::RFC4648 { padding: false };
 
     let encoded_data = extract_data_from_uri(string)?;
@@ -47,7 +48,7 @@ pub fn process_data(string: &str) -> Result<Vec<Account>, Box<dyn std::error::Er
         .collect())
 }
 
-pub fn extract_data_from_uri(uri: &str) -> Result<String, Box<dyn std::error::Error>> {
+pub fn extract_data_from_uri(uri: &str) -> Result<String, Box<dyn Error>> {
     match uri.split("data=").nth(1) {
         Some(encoded_data) => Ok(urlencoding::decode(encoded_data)?.into()),
         _ => Err("No data found in URI".into()),
