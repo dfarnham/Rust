@@ -1,5 +1,5 @@
 [package]
-description = "Display the optauth URI from a QR image or migration link"
+description = "Display the optauth URI and TOTP token from a QR image, URI or migration link"
 name = "qr-otpauth"
 version = "0.1.0"
 authors = ["Dave Farnham <dave.farnham@icloud.com>"]

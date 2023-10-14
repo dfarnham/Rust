@@ -44,7 +44,7 @@ Options:
   -V, --version                      Print version
 ~~~
 
-## qr-otpauth - Display the TOTP token and optauth URI from a QR image or migration link
+## qr-otpauth - Display the optauth URI and TOTP token from a QR image, URI or migration link
 
 ~~~
 1. Extract the otpauth:// string from an image:
