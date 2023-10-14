@@ -24,11 +24,13 @@ members = [
 
 [workspace.dependencies]
 anyhow = "1"
-clap = { version = "4.3.8", features = ["cargo", "derive"] }
+clap = { version = "4", features = ["cargo", "derive"] }
 colored = "2"
 general = { path = "general" }
-itertools = "0.10"
+itertools = "0.11"
 lazy_static = "1.4"
 rand = "0.8.5"
-regex = "1.9"
+regex = "1.10"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
 tokenize = { path = "tokenize" }
