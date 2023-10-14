@@ -1,34 +1,32 @@
 use anyhow::{Context, Result};
 use clap::Parser;
-use general::reset_sigpipe;
 use image::io::Reader as ImageReader;
 use rqrr::PreparedImage;
 use std::error::Error;
 use std::fs::File;
 use std::io::Cursor;
-use std::io::{self, Read, Write};
+use std::io::{self, Read};
 
 // adopted from:
 // https://github.com/Levminer/authme/tree/dev/core/crates/google_authenticator_converter
 // https://alexbakker.me/post/parsing-google-auth-export-qr-code.html
 mod google_authenticator_converter;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    // Behave like a typical unix utility
-    reset_sigpipe()?;
-    let mut stdout = io::stdout().lock();
+mod totp_token;
+use crate::totp_token::display_token;
 
+fn main() -> Result<(), Box<dyn Error>> {
     #[derive(Parser, Debug)]
     #[clap(
         author,
         version,
         about,
-        long_about = "1. Extract the otpauth:// string from an image:\n    $ qr-otpauth my-saved-qr.jpg\n    otpauth://totp/user@site.com?secret=SECRET&issuer=site&algorithm=SHA1&digits=6&period=30\n\n2. Extract account details from otpauth-migration:// data\n    $ qr-otpauth -m 'otpauth-migration://offline?data=bHVja3kK...'\n    Account {\n        name: \"name\",\n        secret: \"Base-32 SECRET\",\n        issuer: \"Site\",\n    }"
+        long_about = "1. Extract the otpauth:// string from an image:\n    $ qr-otpauth my-saved-qr.jpg\n    otpauth://totp/user@site.com?secret=SECRET&issuer=site&algorithm=SHA1&digits=6&period=30\n    totp = 123456\n\n2. Extract account details from otpauth{-migration}:// URI\n    $ qr-otpauth -a 'otpauth-migration://offline?data=bHVja3kK...'\n    Account {\n        name: \"name\",\n        secret: \"Base-32 SECRET\",\n        issuer: \"Site\",\n    }\n    totp = 123456"
     )]
     struct Args {
-        /// "otpauth-migration://offline?data=bHVja3kK..."
+        /// "otpauth-migration://offline?data=bHVja3kK..." or "otpauth://totp/...?secret=SECRET"
         #[arg(short, long)]
-        migration_data: Option<String>,
+        auth: Option<String>,
 
         /// image-file|stdin, filename of "-" implies stdin
         files: Vec<std::path::PathBuf>,
@@ -37,9 +35,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // ===============================================================
 
-    if let Some(migration_data) = args.migration_data {
-        let accounts = google_authenticator_converter::process_data(&migration_data)?;
-        writeln!(stdout, "{accounts:#?}")?;
+    if let Some(otpauth) = args.auth {
+        display_token(&otpauth)?;
         return Ok(());
     }
 
@@ -82,15 +79,19 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Search for grids, without decoding
         match img.detect_grids() {
             grids if grids.len() == 1 => {
-                // Decode the grid
+                // Decode the grid and output the otpauth string
+                // e.g. otpauth://totp/Site:User?Secret=Base-32&period=30&digits=6&issuer=SiteName
+                // e.g. otpauth-migration://offline?data=Base-64
                 let (_meta, content) = grids[0].decode()?;
-                writeln!(stdout, "{input_name} = {content}")?
+                println!("{input_name}\n{}", &content);
+
+                // Display the 6 digit TOTP token
+                display_token(&content)?;
             }
-            grids => writeln!(
-                stdout,
-                "Error({input_name}) expected 1 image grid, found {} grids",
+            grids => println!(
+                "\n** Error({input_name}) expected 1 image grid, found {} grids **\n",
                 grids.len()
-            )?,
+            ),
         }
     }
 

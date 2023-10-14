@@ -44,20 +44,22 @@ Options:
   -V, --version                      Print version
 ~~~
 
-## qr-otpauth - Display the optauth URI from a QR image or migration link
+## qr-otpauth - Display the TOTP token and optauth URI from a QR image or migration link
 
 ~~~
 1. Extract the otpauth:// string from an image:
     $ qr-otpauth my-saved-qr.jpg
     otpauth://totp/user@site.com?secret=SECRET&issuer=site&algorithm=SHA1&digits=6&period=30
+    totp = 123456
 
-2. Extract account details from otpauth-migration:// data
-    $ qr-otpauth -m 'otpauth-migration://offline?data=bHVja3kK...'
+2. Extract account details from otpauth{-migration}:// URI
+    $ qr-otpauth -a 'otpauth-migration://offline?data=bHVja3kK...'
     Account {
         name: "name",
         secret: "Base-32 SECRET",
         issuer: "Site",
     }
+    totp = 123456
 
 Usage: qr-otpauth [OPTIONS] [FILES]...
 
@@ -66,15 +68,14 @@ Arguments:
           image-file|stdin, filename of "-" implies stdin
 
 Options:
-  -m, --migration-data <MIGRATION_DATA>
-          "otpauth-migration://offline?data=bHVja3kK..."
+  -a, --auth <AUTH>
+          "otpauth-migration://offline?data=bHVja3kK..." or "otpauth://totp/...?secret=SECRET"
 
   -h, --help
           Print help (see a summary with '-h')
 
   -V, --version
           Print version
-
 ~~~
 
 ## tokenize - Library to acquire/configure text tokenizers given a specification
