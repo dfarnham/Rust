@@ -1,3 +1,5 @@
+//! This is a utility to extract otpauth strings from QR-images and display the 6-digit TOTP
+
 use anyhow::{Context, Result};
 use clap::Parser;
 use image::io::Reader as ImageReader;
@@ -13,7 +15,7 @@ use std::io::{self, Read};
 mod google_authenticator_converter;
 
 mod totp_token;
-use crate::totp_token::display_token;
+use crate::totp_token::generate_tokens;
 
 fn main() -> Result<(), Box<dyn Error>> {
     #[derive(Parser, Debug)]
@@ -28,6 +30,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         #[arg(short, long)]
         auth: Option<String>,
 
+        /// verbose output
+        #[arg(short, long)]
+        verbose: bool,
+
         /// image-file|stdin, filename of "-" implies stdin
         files: Vec<std::path::PathBuf>,
     }
@@ -36,7 +42,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     // ===============================================================
 
     if let Some(otpauth) = args.auth {
-        display_token(&otpauth)?;
+        if args.verbose {
+            println!("otpauth = {otpauth}");
+        }
+        // Display the 6 digit TOTP token and Issuer
+        for (token, issuer) in generate_tokens(&otpauth)? {
+            println!("{token}, {issuer}");
+        }
         return Ok(());
     }
 
@@ -79,14 +91,23 @@ fn main() -> Result<(), Box<dyn Error>> {
         // Search for grids, without decoding
         match img.detect_grids() {
             grids if grids.len() == 1 => {
-                // Decode the grid and output the otpauth string
+                // Decode the grid and obtain the otpauth string
                 // e.g. otpauth://totp/Site:User?Secret=Base-32&period=30&digits=6&issuer=SiteName
                 // e.g. otpauth-migration://offline?data=Base-64
-                let (_meta, content) = grids[0].decode()?;
-                println!("{input_name}\n{}", &content);
+                let (_meta, otpauth) = grids[0].decode()?;
 
-                // Display the 6 digit TOTP token
-                display_token(&content)?;
+                if args.verbose {
+                    println!("file = {input_name}\notpauth = {otpauth}");
+                }
+
+                // Display the 6 digit TOTP token and Issuer
+                for (token, issuer) in generate_tokens(&otpauth)? {
+                    println!("{token}, {issuer}");
+                }
+
+                if args.verbose {
+                    println!("{:~^20}", "");
+                }
             }
             grids => println!(
                 "\n** Error({input_name}) expected 1 image grid, found {} grids **\n",

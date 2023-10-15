@@ -30,40 +30,65 @@ impl Algorithm {
     }
 }
 
-pub fn display_token(otpauth: &str) -> Result<(), Box<dyn Error>> {
+/// Returns a list of (token, issuer) tuples
+/// otpauth can be of form "otpauth-migration://offline" or "otpauth://totp"
+pub fn generate_tokens(otpauth: &str) -> Result<Vec<(String, String)>, Box<dyn Error>> {
+    let mut token_issuer = vec![];
+
+    // otpauth-migration contains a base-64 payload encoding multiple accounts
     if otpauth.contains("otpauth-migration://offline") {
+        // retreive the list of accounts
         let accounts = google_authenticator_converter::process_data(otpauth)?;
+
+        // build and issue totp() queries from the account secrets
         for account in accounts {
-            let otpauth = format!("secret={}", account.secret);
-            let token = totp(&otpauth)?;
-            println!("{account:?}\ntotp = {token}");
+            let token = totp(&format!("secret={}", account.secret))?;
+            token_issuer.push((token, account.issuer));
         }
     } else {
         let token = totp(otpauth)?;
-        println!("totp = {token}");
-        // Output 20 ~
-        println!("{:~^20}", "");
+        let issuer = uri_param(otpauth, "issuer=").unwrap_or_default();
+        token_issuer.push((token, issuer));
     }
-    Ok(())
+
+    Ok(token_issuer)
 }
 
-/// Will generate a token given the provided Base-32 secret and Algorithm for the current time
-fn time_token(secret_b32: &str, algorithm: Algorithm) -> Result<String, Box<dyn Error>> {
-    let alphabet = base32::Alphabet::RFC4648 { padding: false };
+/// Return the named parameter value in the otpauth string
+fn uri_param(otpauth: &str, name: &str) -> Option<String> {
+    otpauth.split(name).nth(1)?.split('&').next().map(str::to_string)
+}
 
-    // TODO:
-    // What's the spec say?
-    // I have 16-byte Base-32 secret data I need decoded so I zero filled when short
-    let mut secret_bytes = base32::decode(alphabet, secret_b32).expect("Base-32 secret");
-    if secret_bytes.len() < 20 {
-        secret_bytes.resize(20, 0);
-    }
-
-    // current time
+/// Extract the Base-32 'secret=' and optional 'algorithm={SHA1, SHA512, SHA256}'
+/// to generate a token at SystemTime::now()
+fn totp(otpauth: &str) -> Result<String, Box<dyn Error>> {
+    // Time now
     let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
+    // Extract the Secret
+    match uri_param(otpauth, "secret=") {
+        // Compute the token given the secret and SHA algorithm
+        Some(secret) => time_token(
+            now,
+            &secret,
+            // supply the algorith, default to SHA1
+            match uri_param(otpauth, "algorithm=") {
+                Some(sha) if sha.to_lowercase().contains("sha256") => Algorithm::SHA256,
+                Some(sha) if sha.to_lowercase().contains("sha512") => Algorithm::SHA512,
+                _ => Algorithm::SHA1,
+            },
+        ),
+        _ => Err("totp() no secret".into()),
+    }
+}
+
+/// Generate a time based token from the Base-32 secret and Algorithm
+fn time_token(time: u64, secret_b32: &str, algorithm: Algorithm) -> Result<String, Box<dyn Error>> {
+    let alphabet = base32::Alphabet::RFC4648 { padding: false };
+    let secret_bytes = base32::decode(alphabet, secret_b32).expect("Base-32 secret");
+
     // digits=6, period=30
-    let bytes = algorithm.sign(&secret_bytes, &(now / 30).to_be_bytes());
+    let bytes = algorithm.sign(&secret_bytes, &(time / 30).to_be_bytes());
     match bytes.last() {
         Some(n) => {
             let offset = (n & 0xf) as usize;
@@ -72,20 +97,5 @@ fn time_token(secret_b32: &str, algorithm: Algorithm) -> Result<String, Box<dyn 
             Ok(format!("{token:0>6}"))
         }
         None => Err("time_token() failed".into()),
-    }
-}
-
-fn totp(otpauth: &str) -> Result<String, Box<dyn Error>> {
-    // Extract the Algorithm, default to SHA1
-    let algorithm = match otpauth.to_lowercase() {
-        s if s.contains("algorithm=sha256") => Algorithm::SHA256,
-        s if s.contains("algorithm=sha512") => Algorithm::SHA512,
-        _ => Algorithm::SHA1,
-    };
-
-    // Extract the Secret and compute the 6 digit token
-    match otpauth.split("secret=").nth(1) {
-        Some(s) => time_token(s.split('&').next().unwrap(), algorithm),
-        _ => Err("totp failed".into()),
     }
 }
