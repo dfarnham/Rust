@@ -2,8 +2,6 @@ use hmac::{Hmac, Mac};
 use std::error::Error;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::google_authenticator_converter;
-
 // Create aliases
 type HmacSha1 = Hmac<sha1::Sha1>;
 type HmacSha256 = Hmac<sha2::Sha256>;
@@ -30,7 +28,7 @@ impl Algorithm {
     }
 }
 
-/// Returns a list of (token, issuer) tuples
+/// Returns a list of tuples: (token, issuer)
 /// otpauth can be 1 of 2 forms:
 ///   1. "otpauth-migration://offline" -- Protobuf of exported Accounts
 ///   2. "otpauth://totp" -- String with Base-32 encoded Secret
@@ -38,18 +36,13 @@ pub fn generate_tokens(otpauth: &str) -> Result<Vec<(String, String)>, Box<dyn E
     let mut token_issuer = vec![];
 
     if otpauth.contains("otpauth-migration://offline") {
-        // otpauth-migration contains a base-64 payload encoding multiple accounts
+        // otpauth-migration contains a Base-64 data payload encoding multiple accounts
         let accounts = google_authenticator_converter::process_data(otpauth)?;
 
         // build and issue totp() queries from the account secrets
         for account in accounts {
             let token = totp(&format!("secret={}", account.secret))?;
-            // use "issuer" or "name" for the label
-            let issuer = match account.issuer.is_empty() {
-                true => account.name,
-                false => account.issuer,
-            };
-            token_issuer.push((token, issuer));
+            token_issuer.push((token, account.issuer));
         }
     } else {
         let token = totp(otpauth)?;
@@ -60,9 +53,12 @@ pub fn generate_tokens(otpauth: &str) -> Result<Vec<(String, String)>, Box<dyn E
     Ok(token_issuer)
 }
 
-/// Return the named parameter value in the otpauth string
+/// Return the named parameter value fron the otpauth string
 fn uri_param(otpauth: &str, name: &str) -> Option<String> {
-    otpauth.split(name).nth(1)?.split('&').next().map(str::to_string)
+    match otpauth.split(name).nth(1)?.split('&').next().map(urlencoding::decode)? {
+        Ok(s) => Some(s.into()),
+        _ => None,
+    }
 }
 
 /// Extract the Base-32 'secret=' and optional 'algorithm={SHA1, SHA512, SHA256}'
@@ -71,13 +67,19 @@ fn totp(otpauth: &str) -> Result<String, Box<dyn Error>> {
     // Time now
     let now = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
 
-    // Extract the Secret
+    // Period defaults to 30
+    let period = match uri_param(otpauth, "period=") {
+        Some(s) => s.parse::<u64>()?,
+        _ => 30,
+    };
+
+    // Extract the Secret, Algorithm, and generate the token
     match uri_param(otpauth, "secret=") {
-        // Compute the token given the secret and SHA algorithm
         Some(secret) => time_token(
             now,
+            period,
             &secret,
-            // supply the algorith, default to SHA1
+            // Supply the algorithm, defaults to SHA1
             match uri_param(otpauth, "algorithm=") {
                 Some(sha) if sha.to_lowercase().contains("sha256") => Algorithm::SHA256,
                 Some(sha) if sha.to_lowercase().contains("sha512") => Algorithm::SHA512,
@@ -89,12 +91,12 @@ fn totp(otpauth: &str) -> Result<String, Box<dyn Error>> {
 }
 
 /// Generate a time based token from the Base-32 secret and Algorithm
-fn time_token(time: u64, secret_b32: &str, algorithm: Algorithm) -> Result<String, Box<dyn Error>> {
+fn time_token(time: u64, period: u64, secret_b32: &str, algorithm: Algorithm) -> Result<String, Box<dyn Error>> {
     let alphabet = base32::Alphabet::RFC4648 { padding: false };
-    let secret_bytes = base32::decode(alphabet, secret_b32).expect("Base-32 secret");
+    let secret_bytes = base32::decode(alphabet, secret_b32).ok_or("Base-32 secret")?;
 
-    // digits=6, period=30
-    let bytes = algorithm.sign(&secret_bytes, &(time / 30).to_be_bytes());
+    // digits=6
+    let bytes = algorithm.sign(&secret_bytes, &(time / period).to_be_bytes());
     match bytes.last() {
         Some(n) => {
             let offset = (n & 0xf) as usize;
@@ -102,6 +104,6 @@ fn time_token(time: u64, secret_b32: &str, algorithm: Algorithm) -> Result<Strin
             let token = (result & 0x7fff_ffff) % 1000000;
             Ok(format!("{token:0>6}"))
         }
-        None => Err("time_token() failed".into()),
+        _ => Err("time_token() failed".into()),
     }
 }

@@ -1,4 +1,17 @@
-//! This is a utility to extract otpauth strings from QR-images and display the 6-digit TOTP
+//! # qr-otpauth
+//!
+//! ### Command line utility to extract otpauth strings from QR-images and generate their respective 6-digit TOTP
+//!
+//! Background: It has became increasingly difficult to obtain my Base-32 encoded SECRET for import
+//! into other applications which generate TOTP (KeePassXC, Proton Pass).
+//!
+//! This tool uses the excellent crate [rqrr](https://docs.rs/rqrr/latest/rqrr/) for digging out
+//! data from most image types along with the reverse engineered
+//! [protobuf](https://alexbakker.me/post/parsing-google-auth-export-qr-code.html) for
+//! [converting](https://docs.rs/google_authenticator_converter/latest/google_authenticator_converter/)
+//! Google Authenticator Account exports, and a shout out to [totp-rs](https://docs.rs/totp-rs/latest/totp_rs/)
+//! for its succinct byte slicing.
+//!
 
 use anyhow::{Context, Result};
 use clap::Parser;
@@ -8,11 +21,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::Cursor;
 use std::io::{self, Read};
-
-// adopted from:
-// https://github.com/Levminer/authme/tree/dev/core/crates/google_authenticator_converter
-// https://alexbakker.me/post/parsing-google-auth-export-qr-code.html
-mod google_authenticator_converter;
 
 mod totp_token;
 use crate::totp_token::generate_tokens;
