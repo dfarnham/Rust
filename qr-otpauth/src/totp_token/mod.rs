@@ -31,19 +31,25 @@ impl Algorithm {
 }
 
 /// Returns a list of (token, issuer) tuples
-/// otpauth can be of form "otpauth-migration://offline" or "otpauth://totp"
+/// otpauth can be 1 of 2 forms:
+///   1. "otpauth-migration://offline" -- Protobuf of exported Accounts
+///   2. "otpauth://totp" -- String with Base-32 encoded Secret
 pub fn generate_tokens(otpauth: &str) -> Result<Vec<(String, String)>, Box<dyn Error>> {
     let mut token_issuer = vec![];
 
-    // otpauth-migration contains a base-64 payload encoding multiple accounts
     if otpauth.contains("otpauth-migration://offline") {
-        // retreive the list of accounts
+        // otpauth-migration contains a base-64 payload encoding multiple accounts
         let accounts = google_authenticator_converter::process_data(otpauth)?;
 
         // build and issue totp() queries from the account secrets
         for account in accounts {
             let token = totp(&format!("secret={}", account.secret))?;
-            token_issuer.push((token, account.issuer));
+            // use "issuer" or "name" for the label
+            let issuer = match account.issuer.is_empty() {
+                true => account.name,
+                false => account.issuer,
+            };
+            token_issuer.push((token, issuer));
         }
     } else {
         let token = totp(otpauth)?;
