@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         author,
         version,
         about,
-        long_about = "1. Extract the otpauth:// string from an image:\n    $ qr-otpauth my-saved-qr.jpg\n    otpauth://totp/user@site.com?secret=SECRET&issuer=site&algorithm=SHA1&digits=6&period=30\n    totp = 123456\n\n2. Extract account details from otpauth{-migration}:// URI\n    $ qr-otpauth -a 'otpauth-migration://offline?data=bHVja3kK...'\n    Account {\n        name: \"name\",\n        secret: \"Base-32 SECRET\",\n        issuer: \"Site\",\n    }\n    totp = 123456"
+        long_about = "1. Extract the otpauth:// and TOTP from an image:\n    $ qr-otpauth -v my-saved-qr.jpg\n    file = my-saved-qr.jpg\n    otpauth = otpauth://totp/user@site.com?secret=SECRET&issuer=Site&algorithm=SHA1&digits=6&period=30\n    123456, Site\n\n2. TOTP from migration accounts:\n    $ qr-otpauth -a \"otpauth-migration://offline?data=CjMKCkhlbGxvId6tvu8SGFRlc3QxOnRlc3QxQGV4YW1wbGUxLmNvbRoFVGVzdDEgASgBMAIKMwoKSGVsbG8h3q2%2B8BIYVGVzdDI6dGVzdDJAZXhhbXBsZTIuY29tGgVUZXN0MiABKAEwAgozCgpIZWxsbyHerb7xEhhUZXN0Mzp0ZXN0M0BleGFtcGxlMy5jb20aBVRlc3QzIAEoATACEAEYASAAKI3orYEE\"\n    947627, Test1\n    958374, Test2\n    882973, Test3"
     )]
     struct Args {
         /// "otpauth-migration://offline?data=bHVja3kK..." or "otpauth://totp/...?secret=SECRET"
@@ -117,4 +117,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_migration() {
+        let otpauth = "otpauth-migration://offline?data=CjMKCkhlbGxvId6tvu8SGFRlc3QxOnRlc3QxQGV4YW1wbGUxLmNvbRoFVGVzdDEgASgBMAIKMwoKSGVsbG8h3q2%2B8BIYVGVzdDI6dGVzdDJAZXhhbXBsZTIuY29tGgVUZXN0MiABKAEwAgozCgpIZWxsbyHerb7xEhhUZXN0Mzp0ZXN0M0BleGFtcGxlMy5jb20aBVRlc3QzIAEoATACEAEYASAAKI3orYEE";
+        assert_eq!(generate_tokens(&otpauth).unwrap().len(), 3);
+    }
 }

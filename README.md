@@ -15,6 +15,41 @@ $ cd <tool>
 $ cargo install --path .
 ~~~
 
+## qr-otpauth - Display the optauth URI and TOTP token from a QR image, URI or migration link
+
+~~~
+1. Extract the otpauth:// and TOTP from an image:
+    $ qr-otpauth -v my-saved-qr.jpg
+    file = my-saved-qr.jpg
+    otpauth = otpauth://totp/user@site.com?secret=SECRET&issuer=Site&algorithm=SHA1&digits=6&period=30
+    123456, Site
+
+2. TOTP from migration accounts:
+    $ qr-otpauth -a "otpauth-migration://offline?data=CjMKCkhlbGxvId6tvu8SGFRlc3QxOnRlc3QxQGV4YW1wbGUxLmNvbRoFVGVzdDEgASgBMAIKMwoKSGVsbG8h3q2%2B8BIYVGVzdDI6dGVzdDJAZXhhbXBsZTIuY29tGgVUZXN0MiABKAEwAgozCgpIZWxsbyHerb7xEhhUZXN0Mzp0ZXN0M0BleGFtcGxlMy5jb20aBVRlc3QzIAEoATACEAEYASAAKI3orYEE"
+    947627, Test1
+    958374, Test2
+    882973, Test3
+
+Usage: qr-otpauth [OPTIONS] [FILES]...
+
+Arguments:
+  [FILES]...
+          image-file|stdin, filename of "-" implies stdin
+
+Options:
+  -a, --auth <AUTH>
+          "otpauth-migration://offline?data=bHVja3kK..." or "otpauth://totp/...?secret=SECRET"
+
+  -v, --verbose
+          verbose output
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
+~~~
+
 ## mp4tag - Simple utility to overwrite/clear tags in .m4a files
 
 ~~~
@@ -42,40 +77,6 @@ Options:
   -z, --zero                         Remove all fields and metadata
   -h, --help                         Print help
   -V, --version                      Print version
-~~~
-
-## qr-otpauth - Display the optauth URI and TOTP token from a QR image, URI or migration link
-
-~~~
-1. Extract the otpauth:// string from an image:
-    $ qr-otpauth my-saved-qr.jpg
-    otpauth://totp/user@site.com?secret=SECRET&issuer=site&algorithm=SHA1&digits=6&period=30
-    totp = 123456
-
-2. Extract account details from otpauth{-migration}:// URI
-    $ qr-otpauth -a 'otpauth-migration://offline?data=bHVja3kK...'
-    Account {
-        name: "name",
-        secret: "Base-32 SECRET",
-        issuer: "Site",
-    }
-    totp = 123456
-
-Usage: qr-otpauth [OPTIONS] [FILES]...
-
-Arguments:
-  [FILES]...
-          image-file|stdin, filename of "-" implies stdin
-
-Options:
-  -a, --auth <AUTH>
-          "otpauth-migration://offline?data=bHVja3kK..." or "otpauth://totp/...?secret=SECRET"
-
-  -h, --help
-          Print help (see a summary with '-h')
-
-  -V, --version
-          Print version
 ~~~
 
 ## tokenize - Library to acquire/configure text tokenizers given a specification
