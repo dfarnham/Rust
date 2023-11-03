@@ -33,6 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // -x, -b, -o, -d
     let n = if let Some(number) = args.number {
         match number {
+            zero if zero.trim_start_matches('0').is_empty() => 0,
             hex if args.hex || hex.starts_with("0x") || hex.starts_with('x') => {
                 u32::from_str_radix(hex.trim_start_matches("0x").trim_start_matches('x'), 16)
                     .with_context(|| format!("failed to parse '{hex}'"))?
