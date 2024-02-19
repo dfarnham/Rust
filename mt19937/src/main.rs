@@ -21,8 +21,6 @@ const UPPER_MASK: u32 = !LOWER_MASK;
 
 fn prng_mt19937(count: usize, seed: u32) -> Vec<u32> {
     let mut mt = [0_u32; N as usize];
-    let mut idx = N;
-    let mut results = vec![];
 
     // seed
     mt[0] = seed;
@@ -53,6 +51,8 @@ fn prng_mt19937(count: usize, seed: u32) -> Vec<u32> {
         y ^ y >> L
     };
 
+    let mut idx = N;
+    let mut results = vec![];
     for _ in 0..count {
         if idx >= N {
             twist(&mut mt);
@@ -80,7 +80,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let seed = if args.len() > 2 {
         args[2].parse::<u32>()?
     } else {
-        rand::thread_rng().gen_range(0..u32::MAX)
+        rand::thread_rng().gen::<u32>()
     };
 
     for r in prng_mt19937(count, seed) {
