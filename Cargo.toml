@@ -4,13 +4,14 @@ resolver = "2"
 members = [
     # binaries
     "b64",
+    "cnum",
     "crc16",
     "cutr",
     "kennard-stone",
     "mp4tag",
+    "mt19937",
     "nom_word_boundary",
     "num",
-    "cnum",
     "sha",
     "tok",
     "utf8char",

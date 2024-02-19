@@ -1,0 +1,13 @@
+[package]
+description = "Mersenne Twister"
+name = "mt19937"
+version = "0.1.0"
+authors = ["Dave Farnham <dave.farnham@icloud.com>"]
+categories = ["command-line-utilities", "PRNG"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+general.workspace = true
+rand.workspace = true
