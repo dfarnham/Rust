@@ -268,6 +268,26 @@ Options:
   -V, --version  Print version
 ~~~
 
+---
+
+## mt19937 - Mersenne Twister PRNG
+
+~~~
+Usage: mt19937 [count] [seed]
+
+$ mt19937 10 1
+1791095845
+4282876139
+3093770124
+4005303368
+491263
+550290313
+1298508491
+4290846341
+630311759
+1013994432
+~~~
+
 ---  
 
 ## nom\_word\_boundary
