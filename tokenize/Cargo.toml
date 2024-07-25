@@ -13,4 +13,4 @@ regex = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = "1.0"
-unicode-segmentation = "1.10"
+unicode-segmentation = "1.11"

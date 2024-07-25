@@ -1,5 +1,7 @@
 use std::fs::File;
 use std::io::{self, BufRead};
+use std::path::PathBuf;
+use std::str::FromStr;
 
 // https://doc.rust-lang.org/stable/rust-by-example/std_misc/file/read_lines.html
 //
@@ -12,6 +14,33 @@ where
 {
     let file = std::fs::File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+// Reads the lines of a file, trims and returns them as a Vec of the supplied type
+pub fn read_trimmed_data_lines<T>(
+    filename: Option<&PathBuf>,
+) -> Result<Vec<T>, Box<dyn std::error::Error>>
+where
+    T: FromStr,
+    <T as FromStr>::Err: 'static,
+    <T as FromStr>::Err: std::error::Error,
+{
+    let mut values = vec![];
+    match filename {
+        Some(file) if file.as_os_str() != "-" => {
+            for line in read_lines(file)? {
+                values.push(line?.trim().parse::<T>()?);
+            }
+            Ok(values)
+        }
+        _ => {
+            // STDIN
+            for line in io::BufReader::new(io::stdin()).lines() {
+                values.push(line?.trim().parse::<T>()?);
+            }
+            Ok(values)
+        }
+    }
 }
 
 // splits and optionally trims the input String on a separator character
