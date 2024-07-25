@@ -12,6 +12,7 @@ members = [
     "mt19937",
     "nom_word_boundary",
     "num",
+    "plot",
     "sha",
     "tok",
     "tokenize",
