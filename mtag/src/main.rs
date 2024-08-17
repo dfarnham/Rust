@@ -10,7 +10,7 @@ use audio_info::AudioInfo;
 
 // Tagger
 mod tagger;
-use tagger::tagger_from_file;
+use tagger::Tagger;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // parse command line arguments
@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for file in audio_files {
         let mut modified = false;
-        let mut tagger = tagger_from_file(file);
+        let mut tagger = Tagger::new(file);
 
         // Zero -- remove all fields and metatdata
         if args.get_flag("zero") {
