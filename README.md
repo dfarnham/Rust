@@ -18,7 +18,7 @@ $ cargo install --path .
 ## mtag - Utility to read/write/clear audio tags
 
 ~~~
-Utility to read/write/clear tags in audio formats: .m4a, .mp3, flac
+Utility to read/write/clear tags in audio formats: .m4a, .mp3, .flac, .ogg
 
 Usage: mtag [OPTIONS] <FILE>...
 
