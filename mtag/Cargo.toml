@@ -1,0 +1,21 @@
+[package]
+description = "Utility to read/write/clear tags in audio formats: .m4a, .mp3, flac"
+name = "mtag"
+version = "0.1.0"
+authors = ["Dave Farnham <dave.farnham@icloud.com>"]
+categories = ["command-line-utilities"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+general = { workspace = true }
+id3 = "1.14.0"
+metaflac = "0.2.7"
+minimp3_fixed = "0.5.3"
+mp4ameta = "0.11.0"
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

@@ -10,6 +10,7 @@ members = [
     "kennard-stone",
     "mp4tag",
     "mt19937",
+    "mtag",
     "nom_word_boundary",
     "num",
     "plot",
