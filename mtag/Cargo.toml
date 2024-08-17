@@ -1,5 +1,5 @@
 [package]
-description = "Utility to read/write/clear tags in audio formats: .m4a, .mp3, flac"
+description = "Utility to read/write/clear tags in audio formats: .m4a, .mp3, .flac, .ogg"
 name = "mtag"
 version = "0.1.0"
 authors = ["Dave Farnham <dave.farnham@icloud.com>"]
@@ -13,6 +13,7 @@ anyhow = { workspace = true }
 clap = { workspace = true }
 general = { workspace = true }
 id3 = "1.14.0"
+lofty = "0.21.0"
 metaflac = "0.2.7"
 minimp3_fixed = "0.5.3"
 mp4ameta = "0.11.0"

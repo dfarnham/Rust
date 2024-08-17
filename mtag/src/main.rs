@@ -7,6 +7,7 @@ use std::ffi::OsStr;
 use std::fmt;
 use std::fs::{metadata, File};
 use std::path::Path;
+use lofty::prelude::*;
 
 // clap arg parser
 mod argparse;
@@ -117,6 +118,7 @@ enum Tagger {
     M4a(mp4ameta::Tag, String, String, usize, usize),
     Mp3(id3::Tag, String, String, usize, usize),
     Flac(metaflac::Tag, String, String, usize, usize),
+    Ogg(lofty::tag::Tag, String, String, usize, usize),
 }
 impl Tagger {
     // Artist
@@ -129,6 +131,7 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].to_string(),
                 None => "".into(),
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag.get_string(&ItemKey::TrackArtist).unwrap_or("").into(),
         }
     }
     fn remove_artist(&mut self) {
@@ -136,6 +139,7 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_artists(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_artist(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("artist"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::TrackArtist),
         }
     }
     fn set_artist(&mut self, artist: &str) {
@@ -143,6 +147,9 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.set_artist(artist),
             Tagger::Mp3(tag, _, _, _, _) => tag.set_artist(artist),
             Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("artist", vec![artist]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::TrackArtist, artist.into());
+            }
         }
     }
 
@@ -156,6 +163,7 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].to_string(),
                 None => "".into(),
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag.get_string(&ItemKey::AlbumTitle).unwrap_or("").into(),
         }
     }
     fn remove_album(&mut self) {
@@ -163,6 +171,7 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_album(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_album(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("album"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::AlbumTitle),
         }
     }
     fn set_album(&mut self, album: &str) {
@@ -170,6 +179,9 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.set_album(album),
             Tagger::Mp3(tag, _, _, _, _) => tag.set_album(album),
             Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("album", vec![album]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::AlbumTitle, album.into());
+            }
         }
     }
 
@@ -183,6 +195,7 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].to_string(),
                 None => "".into(),
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag.get_string(&ItemKey::AlbumArtist).unwrap_or("").into(),
         }
     }
     fn remove_album_artist(&mut self) {
@@ -190,6 +203,7 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_album_artists(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_album_artist(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("albumartist"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::AlbumArtist),
         }
     }
     fn set_album_artist(&mut self, album_artist: &str) {
@@ -197,6 +211,9 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.set_album_artist(album_artist),
             Tagger::Mp3(tag, _, _, _, _) => tag.set_album_artist(album_artist),
             Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("albumartist", vec![album_artist]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::AlbumArtist, album_artist.into());
+            }
         }
     }
 
@@ -210,6 +227,7 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].to_string(),
                 None => "".into(),
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag.get_string(&ItemKey::TrackTitle).unwrap_or("").into(),
         }
     }
     fn remove_title(&mut self) {
@@ -217,6 +235,7 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_title(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_title(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("title"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::TrackTitle),
         }
     }
     fn set_title(&mut self, title: &str) {
@@ -224,6 +243,9 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.set_title(title),
             Tagger::Mp3(tag, _, _, _, _) => tag.set_title(title),
             Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("title", vec![title]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::TrackTitle, title.into());
+            }
         }
     }
 
@@ -237,6 +259,11 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].parse::<usize>().unwrap(),
                 None => 0,
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag
+                .get_string(&ItemKey::TrackNumber)
+                .unwrap_or("0")
+                .parse::<usize>()
+                .unwrap_or(0),
         }
     }
     fn remove_track_number(&mut self) {
@@ -244,6 +271,7 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_track_number(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_track(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("tracknumber"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::TrackNumber),
         }
     }
     fn set_track_number(&mut self, track_number: usize) {
@@ -251,6 +279,9 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.set_track_number(track_number as u16),
             Tagger::Mp3(tag, _, _, _, _) => tag.set_track(track_number as u32),
             Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("tracknumber", vec![track_number.to_string()]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::TrackNumber, track_number.to_string());
+            }
         }
     }
 
@@ -264,6 +295,11 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].parse::<usize>().unwrap(),
                 None => 0,
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag
+                .get_string(&ItemKey::TrackTotal)
+                .unwrap_or("0")
+                .parse::<usize>()
+                .unwrap_or(0),
         }
     }
     fn remove_track_total(&mut self) {
@@ -271,13 +307,17 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_total_tracks(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_total_tracks(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("tracktotal"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::TrackTotal),
         }
     }
-    fn set_track_total(&mut self, total_tracks: usize) {
+    fn set_track_total(&mut self, track_total: usize) {
         match self {
-            Tagger::M4a(tag, _, _, _, _) => tag.set_total_tracks(total_tracks as u16),
-            Tagger::Mp3(tag, _, _, _, _) => tag.set_total_tracks(total_tracks as u32),
-            Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("tracktotal", vec![total_tracks.to_string()]),
+            Tagger::M4a(tag, _, _, _, _) => tag.set_total_tracks(track_total as u16),
+            Tagger::Mp3(tag, _, _, _, _) => tag.set_total_tracks(track_total as u32),
+            Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("tracktotal", vec![track_total.to_string()]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::TrackTotal, track_total.to_string());
+            }
         }
     }
 
@@ -291,6 +331,11 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].parse::<usize>().unwrap(),
                 None => 0,
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag
+                .get_string(&ItemKey::DiscNumber)
+                .unwrap_or("0")
+                .parse::<usize>()
+                .unwrap_or(0),
         }
     }
     fn remove_disc_number(&mut self) {
@@ -298,6 +343,7 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_disc_number(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_disc(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("discnumber"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::DiscNumber),
         }
     }
     fn set_disc_number(&mut self, disc_number: usize) {
@@ -305,6 +351,9 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.set_disc_number(disc_number as u16),
             Tagger::Mp3(tag, _, _, _, _) => tag.set_disc(disc_number as u32),
             Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("discnumber", vec![disc_number.to_string()]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::DiscNumber, disc_number.to_string());
+            }
         }
     }
 
@@ -318,6 +367,11 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].parse::<usize>().unwrap(),
                 None => 0,
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag
+                .get_string(&ItemKey::DiscTotal)
+                .unwrap_or("0")
+                .parse::<usize>()
+                .unwrap_or(0),
         }
     }
     fn remove_disc_total(&mut self) {
@@ -325,13 +379,17 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_total_discs(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_total_discs(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("disctotal"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::DiscTotal),
         }
     }
-    fn set_disc_total(&mut self, total_discs: usize) {
+    fn set_disc_total(&mut self, disc_total: usize) {
         match self {
-            Tagger::M4a(tag, _, _, _, _) => tag.set_total_discs(total_discs as u16),
-            Tagger::Mp3(tag, _, _, _, _) => tag.set_total_discs(total_discs as u32),
-            Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("disctotal", vec![total_discs.to_string()]),
+            Tagger::M4a(tag, _, _, _, _) => tag.set_total_discs(disc_total as u16),
+            Tagger::Mp3(tag, _, _, _, _) => tag.set_total_discs(disc_total as u32),
+            Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("disctotal", vec![disc_total.to_string()]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::DiscTotal, disc_total.to_string());
+            }
         }
     }
 
@@ -345,6 +403,11 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].parse::<usize>().unwrap(),
                 None => 0,
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag
+                .get_string(&ItemKey::Year)
+                .unwrap_or("0")
+                .parse::<usize>()
+                .unwrap_or(0),
         }
     }
     fn remove_year(&mut self) {
@@ -352,6 +415,7 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_year(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_year(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("date"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::Year),
         }
     }
     fn set_year(&mut self, year: usize) {
@@ -359,6 +423,9 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.set_year(year.to_string()),
             Tagger::Mp3(tag, _, _, _, _) => tag.set_year(year as i32),
             Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("date", vec![year.to_string()]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::Year, year.to_string());
+            }
         }
     }
 
@@ -378,6 +445,7 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].to_string(),
                 None => "".into(),
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag.get_string(&ItemKey::Genre).unwrap_or("").into(),
         }
     }
     fn remove_genre(&mut self) {
@@ -385,6 +453,7 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.remove_genres(),
             Tagger::Mp3(tag, _, _, _, _) => tag.remove_genre(),
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("genre"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::Genre),
         }
     }
     fn set_genre(&mut self, genre: &str) {
@@ -392,6 +461,9 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.set_genre(genre),
             Tagger::Mp3(tag, _, _, _, _) => tag.set_genre(genre),
             Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("genre", vec![genre]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::Genre, genre.into());
+            }
         }
     }
 
@@ -402,6 +474,7 @@ impl Tagger {
             Tagger::M4a(tag, _, _, _, _) => tag.compilation(),
             Tagger::Mp3(tag, _, _, _, _) => tag.get("TCMP").is_some() || tag.get("TCP").is_some(),
             Tagger::Flac(tag, _, _, _, _) => tag.get_vorbis("compilation").is_some(),
+            Tagger::Ogg(tag, _, _, _, _) => tag.get_string(&ItemKey::FlagCompilation).is_some(),
         }
     }
     fn remove_compilation(&mut self) {
@@ -412,6 +485,7 @@ impl Tagger {
                 tag.remove("TCP");
             }
             Tagger::Flac(tag, _, _, _, _) => tag.remove_vorbis("compilation"),
+            Tagger::Ogg(tag, _, _, _, _) => tag.remove_key(&ItemKey::FlagCompilation),
         }
     }
     fn set_compilation(&mut self) {
@@ -422,6 +496,9 @@ impl Tagger {
                 tag.add_frame(Frame::text("TCMP", "1"));
             }
             Tagger::Flac(tag, _, _, _, _) => tag.set_vorbis("compilation", vec!["1"]),
+            Tagger::Ogg(tag, _, _, _, _) => {
+                tag.insert_text(ItemKey::FlagCompilation, "1".to_string());
+            }
         }
     }
 
@@ -438,6 +515,7 @@ impl Tagger {
                 Some(iter) => iter.collect::<Vec<_>>()[0].to_string(),
                 None => "".into(),
             },
+            Tagger::Ogg(tag, _, _, _, _) => tag.get_string(&ItemKey::EncoderSoftware).unwrap_or("").into(),
         }
     }
 
@@ -457,6 +535,7 @@ impl Tagger {
                 },
                 None => "".into(),
             },
+            Tagger::Ogg(_, _, _, _, _) => "".into(),
         }
     }
 
@@ -504,6 +583,23 @@ impl Tagger {
                     tag.remove_vorbis(s);
                 }
             }
+            Tagger::Ogg(tag, _, _, _, _) => {
+                for key in [
+                    ItemKey::TrackArtist,
+                    ItemKey::AlbumTitle,
+                    ItemKey::AlbumArtist,
+                    ItemKey::TrackTitle,
+                    ItemKey::TrackNumber,
+                    ItemKey::TrackTotal,
+                    ItemKey::DiscNumber,
+                    ItemKey::DiscTotal,
+                    ItemKey::Year,
+                    ItemKey::Genre,
+                    ItemKey::FlagCompilation,
+                ] {
+                    tag.remove_key(&key);
+                }
+            }
         }
     }
 
@@ -525,6 +621,9 @@ impl Tagger {
                 }
             }
             Tagger::Flac(tag, _, _, _, _) => tag.save().expect("Flac - write failed"),
+            Tagger::Ogg(tag, _, _, _, _) => tag
+                .save_to_path(file, lofty::config::WriteOptions::default())
+                .expect("Ogg - write failed"),
         }
     }
 
@@ -535,6 +634,7 @@ impl Tagger {
             Tagger::M4a(_, path, _, _, _) => path.to_string(),
             Tagger::Mp3(_, path, _, _, _) => path.to_string(),
             Tagger::Flac(_, path, _, _, _) => path.to_string(),
+            Tagger::Ogg(_, path, _, _, _) => path.to_string(),
         }
     }
 
@@ -545,6 +645,7 @@ impl Tagger {
             Tagger::M4a(_, _, extension, _, _) => extension.to_string(),
             Tagger::Mp3(_, _, extension, _, _) => extension.to_string(),
             Tagger::Flac(_, _, extension, _, _) => extension.to_string(),
+            Tagger::Ogg(_, _, extension, _, _) => extension.to_string(),
         }
     }
 
@@ -555,6 +656,7 @@ impl Tagger {
             Tagger::M4a(_, _, _, bitrate, _) => *bitrate,
             Tagger::Mp3(_, _, _, bitrate, _) => *bitrate,
             Tagger::Flac(_, _, _, bitrate, _) => *bitrate,
+            Tagger::Ogg(_, _, _, bitrate, _) => *bitrate,
         }
     }
 
@@ -565,6 +667,7 @@ impl Tagger {
             Self::M4a(_, _, _, _, seconds) => *seconds,
             Self::Mp3(_, _, _, _, seconds) => *seconds,
             Self::Flac(_, _, _, _, seconds) => *seconds,
+            Self::Ogg(_, _, _, _, seconds) => *seconds,
         }
     }
 
@@ -598,6 +701,26 @@ fn tagger_from_file(file: &Path) -> Tagger {
     let extension = file.extension().unwrap_or(OsStr::new("")).to_string_lossy().to_string();
 
     match extension.as_ref() {
+        "ogg" => {
+            let tagged_file = lofty::probe::Probe::open(file)
+                .expect("ERROR: Bad path provided!")
+                .read()
+                .expect("ERROR: Failed to read file!");
+
+            let tag = match tagged_file.primary_tag() {
+                Some(primary_tag) => primary_tag,
+                // If the "primary" tag doesn't exist, we just grab the
+                // first tag we can find. Realistically, a tag reader would likely
+                // iterate through the tags to find a suitable one.
+                None => tagged_file.first_tag().expect("ERROR: No tags found!"),
+            };
+
+            let properties = tagged_file.properties();
+            let duration = properties.duration();
+            let seconds = duration.as_secs() as usize;
+            let bitrate = properties.audio_bitrate().unwrap_or(0) as usize;
+            Tagger::Ogg(tag.clone(), path, extension, bitrate, seconds)
+        }
         "m4a" => {
             let tag = mp4ameta::Tag::read_from_path(file)
                 .unwrap_or_else(|_| panic!("could not open file `{:?}`", file.as_os_str()));
