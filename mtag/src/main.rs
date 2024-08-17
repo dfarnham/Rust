@@ -773,7 +773,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // Track Total
-        if let Some(track_total) = args.get_one::<usize>("total-tracks") {
+        if let Some(track_total) = args.get_one::<usize>("track-total") {
             if tagger.track_total() != *track_total {
                 modified = true;
                 match track_total == &0 {
@@ -795,7 +795,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // Disc Total
-        if let Some(disc_total) = args.get_one::<usize>("total-discs") {
+        if let Some(disc_total) = args.get_one::<usize>("disc-total") {
             if tagger.disc_total() != *disc_total {
                 modified = true;
                 match disc_total == &0 {
