@@ -1,3 +1,4 @@
+use general::split_on;
 use id3::{Frame, TagLike};
 use lofty::prelude::*;
 use regex::Regex;
@@ -246,7 +247,11 @@ impl Tagger {
             Self::M4a(tag, _, _, _, _) => tag.track_number().unwrap_or(0) as usize,
             Self::Mp3(tag, _, _, _, _) => tag.track().unwrap_or(0) as usize,
             Self::Flac(tag, _, _, _, _) => match tag.get_vorbis("tracknumber") {
-                Some(iter) => iter.collect::<Vec<_>>()[0].parse::<usize>().unwrap(),
+                Some(iter) => {
+                    let s = iter.collect::<Vec<_>>()[0];
+                    let components = split_on::<usize>(s, '/', true).unwrap();
+                    components[0]
+                }
                 None => 0,
             },
             Self::Ogg(tag, _, _, _, _) => tag

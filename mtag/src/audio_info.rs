@@ -31,46 +31,46 @@ impl AudioInfo {
 impl fmt::Display for AudioInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if !self.title.is_empty() {
-            writeln!(f, "title:       {}", self.title)?;
+            writeln!(f, "title:        {}", self.title)?;
         }
 
         if !self.artist.is_empty() {
-            writeln!(f, "artist:      {}", self.artist)?;
+            writeln!(f, "artist:       {}", self.artist)?;
         }
 
         if !self.album.is_empty() {
-            writeln!(f, "album:       {}", self.album)?;
+            writeln!(f, "album:        {}", self.album)?;
         }
 
         if !self.album_artist.is_empty() {
-            writeln!(f, "alb_artist:  {}", self.album_artist)?;
+            writeln!(f, "albumartist:  {}", self.album_artist)?;
         }
 
         if !self.genre.is_empty() {
-            writeln!(f, "genre:       {}", self.genre)?;
+            writeln!(f, "genre:        {}", self.genre)?;
         }
 
         if self.year > 0 {
-            writeln!(f, "year:        {}", self.year)?;
+            writeln!(f, "year:         {}", self.year)?;
         }
 
         if self.track_number > 0 {
             if self.track_total > 0 {
-                writeln!(f, "track:       {}/{}", self.track_number, self.track_total)?;
+                writeln!(f, "track:        {}/{}", self.track_number, self.track_total)?;
             } else {
-                writeln!(f, "track:       {}", self.track_number)?;
+                writeln!(f, "track:        {}", self.track_number)?;
             }
         }
 
         if self.disc_total > 0 {
-            writeln!(f, "disc:        {}/{}", self.disc_number, self.disc_total)?;
+            writeln!(f, "disc:         {}/{}", self.disc_number, self.disc_total)?;
         } else if self.disc_number > 0 {
-            writeln!(f, "disc:        {}", self.disc_number)?;
+            writeln!(f, "disc:         {}", self.disc_number)?;
         }
 
         writeln!(
             f,
-            "time:        {}",
+            "time:         {}",
             match self.seconds {
                 0 => "0:00".into(),
                 s => format!("{}:{:02}", s / 60, s % 60),
@@ -78,25 +78,25 @@ impl fmt::Display for AudioInfo {
         )?;
 
         if self.compilation {
-            writeln!(f, "comp:        yes")?;
+            writeln!(f, "comp:         yes")?;
         }
 
         if !self.encoder.is_empty() {
-            writeln!(f, "encoder:     {}", self.encoder)?;
+            writeln!(f, "encoder:      {}", self.encoder)?;
         }
 
         if !self.extension.is_empty() {
-            writeln!(f, "extension:   {}", self.extension)?;
+            writeln!(f, "extension:    {}", self.extension)?;
         }
 
         if !self.version.is_empty() {
-            writeln!(f, "version:     {}", self.version)?;
+            writeln!(f, "version:      {}", self.version)?;
         }
 
         if self.bitrate > 0 {
-            writeln!(f, "bitrate:     {}", self.bitrate)?;
+            writeln!(f, "bitrate:      {}", self.bitrate)?;
         }
 
-        writeln!(f, "path:        {}", self.path)
+        writeln!(f, "path:         {}", self.path)
     }
 }
