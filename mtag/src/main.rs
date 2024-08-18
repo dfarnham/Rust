@@ -1,5 +1,5 @@
 use general::split_on;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 // clap arg parser
 mod argparse;
@@ -29,6 +29,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if args.get_flag("zero") {
             modified = true;
             tagger.zero();
+        }
+
+        if let Some(json_str) = args.get_one::<String>("from-json") {
+            let mut audio_info: AudioInfo = serde_json::from_str(json_str)?;
+            audio_info.path = file.to_string_lossy().to_string();
+            modified = tagger.update_from_audio_info(&audio_info) || modified;
         }
 
         // Title

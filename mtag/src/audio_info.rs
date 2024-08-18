@@ -1,7 +1,7 @@
-use crate::Serialize;
+use crate::{Deserialize, Serialize};
 use std::fmt;
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AudioInfo {
     pub title: String,
     pub artist: String,

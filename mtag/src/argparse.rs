@@ -12,7 +12,7 @@ pub fn get_args() -> ArgMatches {
         .max_term_width(100)
         .arg(
             Arg::new("FILE")
-                .help("Audio file")
+                .help("Audio file(s)")
                 .required(true)
                 .value_parser(value_parser!(PathBuf))
                 .num_args(1..)
@@ -57,7 +57,7 @@ pub fn get_args() -> ArgMatches {
                 .value_name("trkn")
                 .value_parser(clap::builder::StringValueParser::new())
                 .conflicts_with_all(["track-number", "track-total"])
-                .help("Sets both <track number> and <track total>, ex. -T 1/9"),
+                .help("Sets both <track number> and <track total>, ex. -T 2/8"),
         )
         .arg(
             Arg::new("track-number")
@@ -112,7 +112,6 @@ pub fn get_args() -> ArgMatches {
             Arg::new("compilation")
                 .short('c')
                 .long("compilation")
-                .value_name("compilation")
                 .conflicts_with("no-compilation")
                 .action(ArgAction::SetTrue)
                 .help("Set <compilation flag>"),
@@ -121,7 +120,6 @@ pub fn get_args() -> ArgMatches {
             Arg::new("no-compilation")
                 .short('C')
                 .long("no-compilation")
-                .value_name("remove compilation")
                 .conflicts_with("compilation")
                 .action(ArgAction::SetTrue)
                 .help("Remove <compilation flag>"),
@@ -130,20 +128,21 @@ pub fn get_args() -> ArgMatches {
             Arg::new("json")
                 .short('j')
                 .long("json")
-                .value_name("output JSON")
                 .action(ArgAction::SetTrue)
                 .help("output tags as JSON"),
         )
         .arg(
-            Arg::new("zero")
-                .short('z')
-                .long("zero")
-                .value_name("zero")
+            Arg::new("from-json")
+                .short('J')
+                .long("from-json")
+                .value_name("JSON")
+                .value_parser(clap::builder::StringValueParser::new())
                 .conflicts_with_all([
                     "artist",
                     "album",
                     "album-artist",
                     "title",
+                    "trkn",
                     "track-number",
                     "track-total",
                     "disc-number",
@@ -152,9 +151,16 @@ pub fn get_args() -> ArgMatches {
                     "genre",
                     "compilation",
                     "no-compilation",
+                    "json",
                 ])
+                .help("input tags from JSON"),
+        )
+        .arg(
+            Arg::new("zero")
+                .short('z')
+                .long("zero")
                 .action(ArgAction::SetTrue)
-                .help("Remove all fields and metadata"),
+                .help("Remove all tags"),
         );
     app.get_matches_from(env::args().collect::<Vec<String>>())
 }

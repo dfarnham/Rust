@@ -33,7 +33,8 @@ impl Tagger {
                     // Lossless bitrate:
                     // Sum non-audio: (&DataIdent, &Data) to subtract from the audio byte length
                     let non_audio_len = tag.data().fold(0, |acc, d| acc + d.1.len()) as usize;
-                    (metadata(file).expect("metadata").len() as usize - non_audio_len) * 8 / duration.as_millis() as usize
+                    (metadata(file).expect("metadata").len() as usize - non_audio_len) * 8
+                        / duration.as_millis() as usize
                 } else {
                     0
                 };
@@ -688,5 +689,89 @@ impl Tagger {
             bitrate: self.bitrate(),
             path: self.path(),
         }
+    }
+
+    pub fn update_from_audio_info(&mut self, audio_info: &AudioInfo) -> bool {
+        let mut modified = false;
+
+        if self.title() != audio_info.title {
+            modified = true;
+            match audio_info.title.is_empty() {
+                true => self.remove_title(),
+                false => self.set_title(&audio_info.title),
+            }
+        }
+        if self.artist() != audio_info.artist {
+            modified = true;
+            match audio_info.artist.is_empty() {
+                true => self.remove_artist(),
+                false => self.set_artist(&audio_info.artist),
+            }
+        }
+        if self.album() != audio_info.album {
+            modified = true;
+            match audio_info.album.is_empty() {
+                true => self.remove_album(),
+                false => self.set_album(&audio_info.album),
+            }
+        }
+        if self.album_artist() != audio_info.album_artist {
+            modified = true;
+            match audio_info.album_artist.is_empty() {
+                true => self.remove_album_artist(),
+                false => self.set_album_artist(&audio_info.album_artist),
+            }
+        }
+        if self.genre() != audio_info.genre {
+            modified = true;
+            match audio_info.genre.is_empty() {
+                true => self.remove_genre(),
+                false => self.set_genre(&audio_info.genre),
+            }
+        }
+        if self.year() != audio_info.year {
+            modified = true;
+            match audio_info.year == 0 {
+                true => self.remove_year(),
+                false => self.set_year(audio_info.year),
+            }
+        }
+        if self.track_number() != audio_info.track_number {
+            modified = true;
+            match audio_info.track_number == 0 {
+                true => self.remove_track_number(),
+                false => self.set_track_number(audio_info.track_number),
+            }
+        }
+        if self.track_total() != audio_info.track_total {
+            modified = true;
+            match audio_info.track_total == 0 {
+                true => self.remove_track_total(),
+                false => self.set_track_total(audio_info.track_total),
+            }
+        }
+        if self.disc_number() != audio_info.disc_number {
+            modified = true;
+            match audio_info.disc_number == 0 {
+                true => self.remove_disc_number(),
+                false => self.set_disc_number(audio_info.disc_number),
+            }
+        }
+        if self.disc_total() != audio_info.disc_total {
+            modified = true;
+            match audio_info.disc_total == 0 {
+                true => self.remove_disc_total(),
+                false => self.set_disc_total(audio_info.disc_total),
+            }
+        }
+        if self.compilation() != audio_info.compilation {
+            modified = true;
+            match audio_info.compilation {
+                true => self.set_compilation(),
+                false => self.remove_compilation(),
+            }
+        }
+
+        modified
     }
 }
