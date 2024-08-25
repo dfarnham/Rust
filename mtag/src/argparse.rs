@@ -156,6 +156,13 @@ pub fn get_args() -> ArgMatches {
                 .help("input tags from JSON"),
         )
         .arg(
+            Arg::new("summary")
+                .short('s')
+                .long("summary")
+                .action(ArgAction::SetTrue)
+                .help("Display a summary"),
+        )
+        .arg(
             Arg::new("zero")
                 .short('z')
                 .long("zero")

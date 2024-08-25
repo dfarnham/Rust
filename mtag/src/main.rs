@@ -1,5 +1,6 @@
 use general::split_on;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 // clap arg parser
 mod argparse;
@@ -16,14 +17,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // parse command line arguments
     let args = argparse::get_args();
 
+    let mut max_title_len = 0;
+    let mut total_seconds = 0;
+    let mut song_info = vec![];
+
     let audio_files: Vec<_> = args
         .get_many::<std::path::PathBuf>("FILE")
         .expect("argparse to enforce 1 or more input files")
         .collect();
 
+    let audio_files = match audio_files.len() == 1 && audio_files[0].is_dir() {
+        true => {
+            let mut files = std::fs::read_dir(audio_files[0])?
+                .map(|res| res.unwrap().path().to_string_lossy().to_string())
+                .filter(|f| f.ends_with(".m4a") || f.ends_with(".mp3") || f.ends_with(".flac") || f.ends_with(".ogg"))
+                .map(PathBuf::from)
+                .collect::<Vec<_>>();
+            files.sort();
+            files
+        }
+        false => audio_files.into_iter().cloned().collect::<Vec<_>>(),
+    };
+
     for file in audio_files {
         let mut modified = false;
-        let mut tagger = Tagger::new(file);
+        let mut tagger = Tagger::new(&file);
 
         // Zero -- remove all fields and metatdata
         if args.get_flag("zero") {
@@ -182,15 +200,53 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         if modified {
             println!("*** MODIFIED ***");
-            tagger.save(file);
+            tagger.save(&file);
         }
 
         let audio_info = tagger.info();
+        song_info.push(audio_info.clone());
 
-        if args.get_flag("json") {
+        if args.get_flag("summary") {
+            max_title_len = max_title_len.max(audio_info.title.len());
+            total_seconds += audio_info.seconds;
+        } else if args.get_flag("json") {
             println!("{}", audio_info.json());
         } else {
             println!("{audio_info}");
+        }
+    }
+
+    if args.get_flag("summary") && !song_info.is_empty() {
+        let space = " ";
+        let field_len = max_title_len + 14; // "00. ".len() + " ... ".len() + "00:00".len();
+        let art_len = (field_len - song_info[0].artist.len()) / 2;
+        let header = format!(
+            "{} ({}) [{}]",
+            song_info[0].album, song_info[0].year, song_info[0].genre
+        );
+        let alb_len = match field_len > header.len() {
+            true => (field_len - header.len()) / 2,
+            false => 0,
+        };
+        let playing_time = format!("Playing Time: {}:{:02}", total_seconds / 60, total_seconds % 60);
+        let play_len = match field_len > playing_time.len() {
+            true => (field_len - playing_time.len()) / 2,
+            false => 0,
+        };
+        println!("{space:>art_len$}{}", song_info[0].artist);
+        println!("{space:>alb_len$}{header}");
+        println!("{space:>play_len$}{playing_time}\n");
+
+        for f in song_info {
+            let song_len = max_title_len - f.title.len();
+            println!(
+                "{:2}. {} {:.^song_len$}... {}:{:02}",
+                f.track_number,
+                f.title,
+                "",
+                f.seconds / 60,
+                f.seconds % 60
+            );
         }
     }
 
