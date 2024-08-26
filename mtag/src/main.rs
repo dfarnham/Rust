@@ -217,13 +217,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     if args.get_flag("summary") && !song_info.is_empty() {
-        let space = " ";
-        let field_len = max_title_len + 14; // "00. ".len() + " ... ".len() + "00:00".len();
-        let art_len = (field_len - song_info[0].artist.len()) / 2;
         let header = format!(
             "{} ({}) [{}]",
             song_info[0].album, song_info[0].year, song_info[0].genre
         );
+        let space = " ";
+        let field_len = max_title_len + 14; // "00. ".len() + " ... ".len() + "00:00".len();
+        let art_len = match field_len > song_info[0].artist.len() {
+            true => (field_len - song_info[0].artist.len()) / 2,
+            false => 0,
+        };
         let alb_len = match field_len > header.len() {
             true => (field_len - header.len()) / 2,
             false => 0,
