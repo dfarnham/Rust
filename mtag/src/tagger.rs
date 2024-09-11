@@ -27,6 +27,9 @@ impl Tagger {
             "m4a" => {
                 let tag = mp4ameta::Tag::read_from_path(file)
                     .unwrap_or_else(|_| panic!("could not open file `{:?}`", file.as_os_str()));
+                //for section in tag.data() {
+                //    println!("{:?}", section);
+                //}
                 let bitrate = if let Some(avg_bitrate) = tag.avg_bitrate() {
                     avg_bitrate as usize / 1000
                 } else if let Some(duration) = tag.duration() {
@@ -393,7 +396,7 @@ impl Tagger {
     // ====
     pub fn year(&self) -> usize {
         match self {
-            Self::M4a(tag, _, _, _, _) => tag.year().unwrap_or("0").parse::<usize>().unwrap_or(0),
+            Self::M4a(tag, _, _, _, _) => tag.year().unwrap_or("0000")[..4].parse::<usize>().unwrap_or(0),
             Self::Mp3(tag, _, _, _, _) => tag.year().unwrap_or(0) as usize,
             Self::Flac(tag, _, _, _, _) => match tag.get_vorbis("date") {
                 Some(iter) => iter.collect::<Vec<_>>()[0].parse::<usize>().unwrap(),
